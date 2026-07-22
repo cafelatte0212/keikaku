@@ -9,93 +9,336 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #f3f4f6;
-      margin: 0; padding: 0; padding-bottom: 80px;
+      margin: 0;
+      padding: 0;
+      padding-bottom: 80px;
     }
 
-    /* === ヘッダー === */
+    /* ヘッダー */
     .header {
-      background: white; padding: 16px; display: flex;
-      justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10;
+      background: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     .header h1 { margin: 0; font-size: 18px; color: #1f2937; }
+    
     .admin-btn {
-      display: none; background: #ef4444; color: white; border: none;
-      padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;
+      display: none; 
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    /* === 共通スタイル === */
+    /* メインエリア */
     .container { padding: 16px; max-width: 500px; margin: 0 auto; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px; }
-    .input-style { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; margin-top: 6px; margin-bottom: 12px; }
-    .primary-btn { width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-    .delete-btn { background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 
-    /* === 部屋機能 === */
-    .room-box { background: #e0e7ff; border: 1px dashed #6366f1; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; color: #3730a3; }
+    /* カード */
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+    }
 
-    /* === カレンダー UI === */
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .calendar-header h3 { margin: 0; font-size: 16px; }
-    .month-btn { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-    .weekday { font-size: 12px; font-weight: bold; color: #6b7280; padding: 6px 0; }
-    .weekday.sun { color: #ef4444; } .weekday.sat { color: #3b82f6; }
-    .day-cell { padding: 10px 0; border-radius: 8px; font-size: 14px; cursor: pointer; background: #f9fafb; border: 1px solid transparent; }
+    /* --- 月間カレンダーUI --- */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .calendar-header h3 { margin: 0; font-size: 18px; }
+    .month-btn {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .weekday {
+      font-size: 13px;
+      font-weight: bold;
+      color: #6b7280;
+      padding: 6px 0;
+    }
+    .weekday.sun { color: #ef4444; }
+    .weekday.sat { color: #3b82f6; }
+    
+    .day-cell {
+      min-height: 52px;
+      padding: 6px 2px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #f9fafb;
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
     .day-cell:hover { background: #e0e7ff; }
-    .day-cell.selected { background: #4f46e5; color: white; font-weight: bold; }
-    .day-cell.empty { background: transparent; cursor: default; }
+    .day-cell.selected {
+      background: #4f46e5;
+      color: white;
+      border-color: #3730a3;
+    }
+    .day-cell.empty { background: transparent; cursor: default; border: none; }
 
-    /* === スケジュール入力パネル === */
-    .time-selector-panel { display: none; background: #f9fafb; border: 1px solid #e5e7eb; padding: 16px; border-radius: 12px; margin-top: 16px; }
-    .status-btn-group { display: flex; gap: 10px; margin: 12px 0; }
-    .status-btn { flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; font-weight: bold; cursor: pointer; }
+    .status-dots {
+      display: flex;
+      gap: 3px;
+      margin-top: 2px;
+      height: 8px;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .dot.ok { background-color: #10b981; }
+    .dot.ng { background-color: #ef4444; }
+
+    .time-selector-panel {
+      display: none;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+
+    .existing-notes-box {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .existing-note-item {
+      font-size: 13px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .existing-note-item:last-child { margin-bottom: 0; }
+
+    .input-style {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .status-btn-group {
+      display: flex;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .status-btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
     .status-btn.ok.active { background: #d1fae5; border-color: #10b981; color: #047857; }
     .status-btn.ng.active { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
     
-    .schedule-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-weight: bold; }
+    .add-time-btn {
+      width: 100%;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .schedule-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
     .schedule-item.status-ok { background: #d1fae5; color: #047857; border-left: 5px solid #10b981; }
     .schedule-item.status-ng { background: #fee2e2; color: #b91c1c; border-left: 5px solid #ef4444; }
-
-    /* === ルーレット UI === */
-    #rouletteCanvas { width: 100%; max-width: 300px; height: 300px; display: block; margin: 0 auto; }
-    .roulette-list { margin-top: 16px; }
-    .roulette-item { display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; }
-    .weight-input { width: 50px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; }
-
-    /* === レビュー UI === */
-    .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; font-size: 32px; cursor: pointer; margin-bottom: 12px; }
-    .star-rating input { display: none; }
-    .star-rating label { color: #d1d5db; transition: color 0.2s; }
-    .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #fbbf24; }
     
-    .review-item { background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
-    .review-stars { color: #fbbf24; font-size: 16px; margin-bottom: 4px; }
-    .review-comment { font-size: 14px; color: #374151; margin-bottom: 8px; }
-    .review-meta { font-size: 11px; color: #9ca3af; text-align: right; }
+    .delete-btn {
+      background: rgba(0, 0, 0, 0.08);
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+      color: inherit;
+    }
+    .delete-btn:hover { background: rgba(0, 0, 0, 0.15); }
 
-    /* === 管理者フィルター === */
-    .filter-group { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
-    .filter-btn { background: #f3f4f6; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; white-space: nowrap; }
-    .filter-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+    /* --- 🎰 ルーレットUI --- */
+    .roulette-container {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      margin: 20px auto;
+    }
+    .roulette-pointer {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 24px solid #ef4444;
+      z-index: 10;
+    }
+    #rouletteCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 0.99);
+    }
+    .spin-btn {
+      width: 100%;
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    }
+    .spin-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .color-select {
+      padding: 8px 4px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .prob-input {
+      width: 60px;
+      text-align: right;
+    }
 
-    /* === 下部ナビ === */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; display: flex; border-top: 1px solid #e5e7eb; z-index: 100; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #9ca3af; font-size: 11px; cursor: pointer; border: none; background: none; }
+    /* --- 💬 レビューUI --- */
+    .star-rating {
+      display: flex;
+      gap: 8px;
+      font-size: 28px;
+      cursor: pointer;
+      margin: 8px 0 16px 0;
+    }
+    .star-rating span { color: #d1d5db; transition: color 0.2s; }
+    .star-rating span.active { color: #f59e0b; }
+
+    .review-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* 下部ナビゲーション */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: white;
+      display: flex;
+      border-top: 1px solid #e5e7eb;
+      z-index: 100;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 11px;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
     .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
     .nav-item.active { color: #4f46e5; font-weight: bold; }
 
-    /* === モーダル === */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; padding: 32px; border-radius: 16px; text-align: center; width: 80%; max-width: 350px; animation: pop 0.3s ease-out; }
-    @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    /* フィルターボタン */
+    .filter-group {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .filter-btn {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .filter-btn.active {
+      background: #4f46e5;
+      color: white;
+      border-color: #4f46e5;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ヘッダー -->
   <div class="header">
     <h1>🎉 遊び計画キメ太郎</h1>
     <button id="adminBtn" class="admin-btn" onclick="openAdmin()">🔒 管理者画面</button>
@@ -103,552 +346,635 @@
 
   <div class="container">
 
-    <!-- ==============================
-      1. カレンダータブ 
-    =============================== -->
+    <!-- 1. カレンダータブ -->
     <div id="calendarTab" class="tab-content active">
-      
-      <!-- 部屋ログイン -->
-      <div class="card">
-        <h2>🏠 グループ部屋に参加</h2>
-        <div id="roomSelectArea">
-          <label style="font-size:12px; color:#6b7280; font-weight:bold;">合言葉（部屋の名前）</label>
-          <input type="text" id="room-input" class="input-style" placeholder="例: いつもの5人グループ">
-          <button class="primary-btn" onclick="joinRoom()">部屋に入る・作成する</button>
-        </div>
-        <div id="roomActiveArea" style="display: none;">
-          <div class="room-box">
-            🔑 参加中の部屋: <b id="currentRoomName" style="font-size:15px;">--</b>
-          </div>
-          <button style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;" onclick="leaveRoom()">部屋を出る</button>
-        </div>
-      </div>
-
-      <!-- 日程調整カレンダー -->
       <div class="card">
         <h2>📅 日程の選択</h2>
         
         <div class="calendar-header">
           <button class="month-btn" onclick="changeMonth(-1)">＜</button>
-          <h3 id="currentMonthTitle">--年 --月</h3>
+          <h3 id="currentMonthTitle">2026年 7月</h3>
           <button class="month-btn" onclick="changeMonth(1)">＞</button>
         </div>
 
         <div class="calendar-grid">
-          <div class="weekday sun">日</div><div class="weekday">月</div><div class="weekday">火</div>
-          <div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div><div class="weekday sat">土</div>
+          <div class="weekday sun">日</div>
+          <div class="weekday">月</div>
+          <div class="weekday">火</div>
+          <div class="weekday">水</div>
+          <div class="weekday">木</div>
+          <div class="weekday">金</div>
+          <div class="weekday sat">土</div>
         </div>
         <div id="calendarDays" class="calendar-grid"></div>
 
-        <!-- 日付タップ後入力パネル -->
         <div id="timeSelectorPanel" class="time-selector-panel">
-          <h3 id="selectedDateTitle" style="margin-top:0; font-size:15px; color:#4f46e5;">選択中: --</h3>
+          <h3 id="selectedDateTitle" style="margin-top:0; font-size:16px; color:#4f46e5;">選択中: --</h3>
           
-          <label style="font-size: 12px; font-weight: bold; color: #6b7280;">あなたの名前</label>
-          <input type="text" id="userNameInput" class="input-style" placeholder="例: たろう">
+          <div id="existingNotesContainer" class="existing-notes-box">
+            <div style="font-size:12px; font-weight:bold; color:#6b7280; margin-bottom:4px;">📌 この日の登録済み理由・予定:</div>
+            <div id="existingNotesList"></div>
+          </div>
 
           <label style="font-size: 12px; font-weight: bold; color: #6b7280;">時間帯を選択</label>
           <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 12px;">
-            <input type="time" id="startTime" class="input-style" value="13:00" style="margin:0;">
+            <input type="time" id="startTime" class="input-style" value="13:00">
             <span>〜</span>
-            <input type="time" id="endTime" class="input-style" value="17:00" style="margin:0;">
+            <input type="time" id="endTime" class="input-style" value="17:00">
           </div>
+
+          <label style="font-size: 12px; font-weight: bold; color: #6b7280;">理由（任意）</label>
+          <input type="text" id="reasonInput" class="input-style" placeholder="例: バイト、学校、旅行など" style="margin-top: 4px;">
 
           <div class="status-btn-group">
             <button id="btnOk" class="status-btn ok active" onclick="setStatus('ok')">🟢 予定なし（空き）</button>
             <button id="btnNg" class="status-btn ng" onclick="setStatus('ng')">🔴 予定あり（NG）</button>
           </div>
 
-          <button class="primary-btn" onclick="addSchedule()">Firebaseに登録する</button>
+          <button class="add-time-btn" onclick="addSchedule()">この時間帯を追加する</button>
         </div>
 
-        <h3 style="margin-top: 24px;">📊 みんなの回答一覧</h3>
+        <h3 style="margin-top: 24px;">📋 登録された時間帯一覧</h3>
         <div id="scheduleList">
-          <p style="color: #9ca3af; font-size: 13px;">部屋に入ると表示されます</p>
+          <p style="color: #9ca3af; font-size: 13px;">まだ時間帯が追加されていません。</p>
         </div>
+
       </div>
     </div>
 
-
-    <!-- ==============================
-      2. ルーレットタブ 
-    =============================== -->
+    <!-- 2. ルーレットタブ -->
     <div id="rouletteTab" class="tab-content">
       <div class="card">
         <h2>🎰 行き先ルーレット</h2>
-        <div style="position: relative;">
+        
+        <div class="roulette-container">
+          <div class="roulette-pointer"></div>
           <canvas id="rouletteCanvas" width="300" height="300"></canvas>
-          <!-- 真ん中のピン -->
-          <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #ef4444; z-index: 10;"></div>
         </div>
-        
-        <button id="spinBtn" class="primary-btn" style="margin-top: 16px; padding: 16px; font-size: 18px; background: #ec4899;" onclick="startRoulette()">🎯 ルーレットを回す！</button>
 
-        <h3 style="margin-top: 24px; font-size: 15px;">📝 選択肢と確率の設定</h3>
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <input type="text" id="rouletteItemInput" class="input-style" style="margin:0;" placeholder="例: 焼肉">
-          <input type="number" id="rouletteWeightInput" class="input-style" style="margin:0; width: 80px;" placeholder="確率" value="10">
-          <button class="primary-btn" style="width: auto; white-space: nowrap;" onclick="addRouletteItem()">追加</button>
+        <button id="spinBtn" class="spin-btn" onclick="spinRoulette()">🎯 ルーレットを回す！</button>
+
+        <div id="resultBox" style="display:none; margin-top:16px; padding:12px; background:#e0e7ff; border-radius:12px; text-align:center; font-weight:bold; color:#3730a3; font-size:18px;">
+          決定: <span id="resultText">--</span>
         </div>
-        
-        <!-- 均等割りボタン -->
-        <button class="primary-btn" style="background: #10b981; margin-bottom: 12px;" onclick="equalizeWeights()">⚖️ すべての確率を均等にする</button>
 
-        <div id="rouletteList" class="roulette-list"></div>
+        <!-- 候補設定エリア -->
+        <h3 style="margin-top: 24px; display:flex; justify-content:space-between; align-items:center;">
+          <span>📝 候補・確率・色 <span style="font-size:13px; font-weight:normal; color:#6b7280;">(最大9個)</span></span>
+          <button onclick="equalizeProbabilities()" style="font-size:11px; padding:4px 8px; border-radius:6px; background:#f3f4f6; border:1px solid #d1d5db; cursor:pointer;">⚖️ 均等割りにする</button>
+        </h3>
+
+        <div id="optionsList"></div>
+
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <input type="text" id="newOptionInput" class="input-style" placeholder="新しい行き先（例: カラオケ）">
+          <button onclick="addOption()" style="background:#4f46e5; color:white; border:none; padding:0 16px; border-radius:8px; font-weight:bold; white-space:nowrap; cursor:pointer;">追加</button>
+        </div>
+
       </div>
     </div>
 
-
-    <!-- ==============================
-      3. レビュータブ 
-    =============================== -->
+    <!-- 3. レビュータブ -->
     <div id="reviewTab" class="tab-content">
       <div class="card">
-        <h2>💬 アプリの評価・感想</h2>
-        <p style="font-size: 13px; color: #6b7280;">使い心地や、次に追加してほしい機能を教えてください！</p>
+        <h2>💬 ご意見・レビュー</h2>
+        <p style="font-size:13px; color:#6b7280;">アプリの感想やご要望をお聞かせください！</p>
         
-        <div class="star-rating">
-          <input type="radio" id="star5" name="rate" value="5"><label for="star5">★</label>
-          <input type="radio" id="star4" name="rate" value="4"><label for="star4">★</label>
-          <input type="radio" id="star3" name="rate" value="3"><label for="star3">★</label>
-          <input type="radio" id="star2" name="rate" value="2"><label for="star2">★</label>
-          <input type="radio" id="star1" name="rate" value="1" checked><label for="star1">★</label>
+        <label style="font-size:12px; font-weight:bold; color:#4b5563;">評価</label>
+        <div class="star-rating" id="starRating">
+          <span onclick="setRating(1)">★</span>
+          <span onclick="setRating(2)">★</span>
+          <span onclick="setRating(3)">★</span>
+          <span onclick="setRating(4)">★</span>
+          <span onclick="setRating(5)">★</span>
         </div>
 
-        <input type="text" id="reviewName" class="input-style" placeholder="お名前 (任意)">
-        <textarea id="reviewComment" class="input-style" rows="4" placeholder="感想を書いてね！"></textarea>
-        <button class="primary-btn" onclick="submitReview()">レビューを送信する</button>
+        <label style="font-size:12px; font-weight:bold; color:#4b5563;">お名前（ニックネーム可）</label>
+        <input type="text" id="reviewAuthor" class="input-style" placeholder="例: たろう" style="margin-top:4px; margin-bottom:12px;">
+
+        <label style="font-size:12px; font-weight:bold; color:#4b5563;">コメント</label>
+        <textarea id="reviewComment" class="input-style" rows="3" placeholder="使いやすかった点や追加してほしい機能など" style="margin-top:4px; margin-bottom:12px; font-family:inherit;"></textarea>
+
+        <button class="add-time-btn" onclick="submitReview()">レビューを送信する</button>
       </div>
     </div>
 
-
-    <!-- ==============================
-      4. 管理者画面タブ 
-    =============================== -->
+    <!-- 4. 【作者専用】管理者画面 -->
     <div id="adminTab" class="tab-content">
       <div class="card">
         <h2>📊 レビュー管理（作者専用）</h2>
         <div class="filter-group">
-          <button class="filter-btn active" onclick="setAdminFilter('all')">すべて</button>
-          <button class="filter-btn" onclick="setAdminFilter(5)">★5のみ</button>
-          <button class="filter-btn" onclick="setAdminFilter(4)">★4のみ</button>
-          <button class="filter-btn" onclick="setAdminFilter(3)">★3のみ</button>
-          <button class="filter-btn" onclick="setAdminFilter(2)">★2のみ</button>
-          <button class="filter-btn" onclick="setAdminFilter(1)">★1のみ</button>
+          <button class="filter-btn active" onclick="filterReviews('all', this)">すべて</button>
+          <button class="filter-btn" onclick="filterReviews(5, this)">★5のみ</button>
+          <button class="filter-btn" onclick="filterReviews(4, this)">★4のみ</button>
+          <button class="filter-btn" onclick="filterReviews(3, this)">★3のみ</button>
+          <button class="filter-btn" onclick="filterReviews(2, this)">★2のみ</button>
+          <button class="filter-btn" onclick="filterReviews(1, this)">★1のみ</button>
         </div>
-        <div id="adminReviewList">
-          <p style="color: #6b7280;">読み込み中...</p>
+        <div id="reviewList">
+          <p style="color: #6b7280;">ここに届いたレビューが並びます。</p>
         </div>
       </div>
     </div>
 
-  </div> <!-- container end -->
+  </div>
 
-  <!-- ==============================
-    下部ナビゲーション 
-  =============================== -->
+  <!-- 下部タブ -->
   <div class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('calendarTab', this)">
-      <span class="icon">📅</span><span>カレンダー</span>
+      <span class="icon">📅</span>
+      <span>カレンダー</span>
     </button>
     <button class="nav-item" onclick="switchTab('rouletteTab', this)">
-      <span class="icon">🎰</span><span>ルーレット</span>
+      <span class="icon">🎰</span>
+      <span>ルーレット</span>
     </button>
     <button class="nav-item" onclick="switchTab('reviewTab', this)">
-      <span class="icon">💬</span><span>レビュー</span>
+      <span class="icon">💬</span>
+      <span>レビュー</span>
     </button>
   </div>
 
-  <!-- ルーレット結果モーダル -->
-  <div id="resultModal" class="modal-overlay">
-    <div class="modal-content">
-      <h2 style="margin-top:0; color:#4f46e5;">🎉 結果発表 🎉</h2>
-      <div id="resultText" style="font-size: 32px; font-weight: bold; margin: 20px 0; color: #111827;"></div>
-      <button class="primary-btn" onclick="closeModal()">閉じる</button>
-    </div>
-  </div>
-
-
-  <!-- ==============================
-    ここから JavaScript & Firebase 
-  =============================== -->
-  <script type="module">
-    // Firebase SDKのインポート
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // 🔴【超重要】あなたのFirebase設定キーに書き換えてください！🔴
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // グローバル変数
-    let currentRoom = "";
-    let unsubscribeSchedules = null;
-    let unsubscribeRoulette = null;
-    let unsubscribeReviews = null;
-
-    // --- 1. タブ・基本操作 ---
-    window.switchTab = function(tabId, btnElement) {
+  <script>
+    // --- 1. 基本設定＆タブ切り替え ---
+    function switchTab(tabId, btnElement) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
       document.getElementById(tabId).classList.add('active');
       if (btnElement) btnElement.classList.add('active');
-    };
 
-    window.openAdmin = function() { window.switchTab('adminTab', null); };
-
-    // 管理者権限チェック（URLに ?admin=secret99 で有効化）
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'secret99') {
-      localStorage.setItem('isAppAdmin', 'true');
-      alert('🎉 管理者権限を有効化しました！');
-    }
-    if (localStorage.getItem('isAppAdmin') === 'true') {
-      document.getElementById('adminBtn').style.display = 'block';
-      subscribeReviews(); // 管理者用レビュー読み込み
+      if (tabId === 'rouletteTab') {
+        drawRoulette();
+      } else if (tabId === 'adminTab') {
+        renderReviews('all');
+      }
     }
 
-    // --- 2. 部屋機能 ---
-    window.joinRoom = function() {
-      const roomName = document.getElementById("room-input").value.trim();
-      if (!roomName) return alert("部屋の名前を入力してください！");
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'secret99') {
+        localStorage.setItem('isAppAdmin', 'true');
+        alert('🎉 管理者権限を有効化しました！');
+      }
 
-      currentRoom = roomName;
-      document.getElementById("currentRoomName").innerText = currentRoom;
-      document.getElementById("roomSelectArea").style.display = "none";
-      document.getElementById("roomActiveArea").style.display = "block";
+      if (localStorage.getItem('isAppAdmin') === 'true') {
+        document.getElementById('adminBtn').style.display = 'block';
+      }
 
-      // 部屋のデータを購読
-      subscribeSchedules();
-      subscribeRoulette();
+      // ローカルストレージからデータ読み込み
+      loadDataFromStorage();
+
+      renderCalendar();
+      renderSchedules();
+      renderOptions();
+      drawRoulette();
+      setRating(5); // デフォルト★5
     };
 
-    window.leaveRoom = function() {
-      currentRoom = "";
-      document.getElementById("roomSelectArea").style.display = "block";
-      document.getElementById("roomActiveArea").style.display = "none";
-      document.getElementById("room-input").value = "";
-      if (unsubscribeSchedules) unsubscribeSchedules();
-      if (unsubscribeRoulette) unsubscribeRoulette();
-      document.getElementById("scheduleList").innerHTML = '<p style="color: #9ca3af; font-size: 13px;">部屋に入ると表示されます</p>';
-      rouletteItems = []; drawRoulette(); renderRouletteList();
-    };
+    function openAdmin() { switchTab('adminTab', null); }
+
+    // --- 💾 データ保存・読み込み処理 ---
+    function saveDataToStorage() {
+      localStorage.setItem('kimetarou_schedules', JSON.stringify(scheduleData));
+      localStorage.setItem('kimetarou_roulette', JSON.stringify(rouletteOptions));
+      localStorage.setItem('kimetarou_reviews', JSON.stringify(reviewData));
+    }
+
+    function loadDataFromStorage() {
+      const savedSchedules = localStorage.getItem('kimetarou_schedules');
+      if (savedSchedules) scheduleData = JSON.parse(savedSchedules);
+
+      const savedRoulette = localStorage.getItem('kimetarou_roulette');
+      if (savedRoulette) rouletteOptions = JSON.parse(savedRoulette);
+
+      const savedReviews = localStorage.getItem('kimetarou_reviews');
+      if (savedReviews) reviewData = JSON.parse(savedReviews);
+    }
 
 
-    // --- 3. カレンダー機能 ---
+    // --- 2. Googleカレンダー風 月間カレンダー処理 ---
     let currentDate = new Date();
     let selectedFullDate = null;
+    let scheduleData = [];
 
     function renderCalendar() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
+
       document.getElementById('currentMonthTitle').innerText = `${year}年 ${month + 1}月`;
 
       const firstDay = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
+
       const daysContainer = document.getElementById('calendarDays');
       daysContainer.innerHTML = '';
 
       for (let i = 0; i < firstDay; i++) {
         daysContainer.innerHTML += `<div class="day-cell empty"></div>`;
       }
+
       for (let date = 1; date <= lastDate; date++) {
         const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
         const isSelected = selectedFullDate === dateString ? 'selected' : '';
-        daysContainer.innerHTML += `<div class="day-cell ${isSelected}" onclick="selectDate('${dateString}', this)">${date}</div>`;
-      }
-    }
-    renderCalendar();
 
-    window.changeMonth = function(delta) {
-      currentDate.setMonth(currentDate.getMonth() + delta);
-      renderCalendar();
-    };
-
-    window.selectDate = function(dateStr, element) {
-      selectedFullDate = dateStr;
-      document.querySelectorAll('.day-cell').forEach(cell => cell.classList.remove('selected'));
-      element.classList.add('selected');
-      document.getElementById('selectedDateTitle').innerText = `📅 選択中: ${dateStr}`;
-      document.getElementById('timeSelectorPanel').style.display = 'block';
-    };
-
-
-    // --- 4. スケジュール（Firebase連携） ---
-    let currentStatus = 'ok';
-    window.setStatus = function(status) {
-      currentStatus = status;
-      document.getElementById('btnOk').classList.toggle('active', status === 'ok');
-      document.getElementById('btnNg').classList.toggle('active', status === 'ng');
-    };
-
-    window.addSchedule = async function() {
-      if (!currentRoom) return alert("先に部屋に入ってください！");
-      const user = document.getElementById('userNameInput').value.trim();
-      const start = document.getElementById('startTime').value;
-      const end = document.getElementById('endTime').value;
-
-      if (!user || !selectedFullDate || !start || !end) return alert("名前、日付、時間を正しく入力してください");
-
-      try {
-        await addDoc(collection(db, "rooms", currentRoom, "schedules"), {
-          user: user, date: selectedFullDate, time: `${start}〜${end}`, status: currentStatus, createdAt: serverTimestamp()
-        });
-        alert("登録しました！");
-      } catch(e) { alert("エラー: " + e.message); }
-    };
-
-    function subscribeSchedules() {
-      const q = query(collection(db, "rooms", currentRoom, "schedules"), orderBy("createdAt", "desc"));
-      unsubscribeSchedules = onSnapshot(q, (snapshot) => {
-        const listContainer = document.getElementById('scheduleList');
-        if (snapshot.empty) {
-          listContainer.innerHTML = '<p style="color: #9ca3af; font-size: 13px;">まだ回答がありません</p>';
-          return;
+        const daySchedules = scheduleData.filter(item => item.date === dateString);
+        let dotsHtml = '';
+        if (daySchedules.length > 0) {
+          dotsHtml = '<div class="status-dots">';
+          daySchedules.forEach(sched => {
+            const dotClass = sched.status === 'ok' ? 'ok' : 'ng';
+            dotsHtml += `<div class="dot ${dotClass}"></div>`;
+          });
+          dotsHtml += '</div>';
         }
-        let html = "";
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const id = docSnap.id;
-          const bgClass = data.status === 'ok' ? 'status-ok' : 'status-ng';
-          const badge = data.status === 'ok' ? '🟢 OK' : '🔴 NG';
-          html += `
-            <div class="schedule-item ${bgClass}">
-              <div>
-                <div style="font-size: 11px; opacity: 0.8;">${data.date} (${data.user})</div>
-                <div>⏰ ${data.time}</div>
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="font-size: 12px;">${badge}</div>
-                <button class="delete-btn" onclick="deleteSchedule('${id}')">消</button>
-              </div>
-            </div>`;
-        });
-        listContainer.innerHTML = html;
-      });
-    }
 
-    window.deleteSchedule = async function(id) {
-      if(confirm("削除しますか？")) await deleteDoc(doc(db, "rooms", currentRoom, "schedules", id));
-    };
-
-
-    // --- 5. ルーレット機能（均等割り・重みづけ・Firebase） ---
-    let rouletteItems = [];
-    const canvas = document.getElementById("rouletteCanvas");
-    const ctx = canvas.getContext("2d");
-    let currentAngle = 0;
-
-    function subscribeRoulette() {
-      const q = query(collection(db, "rooms", currentRoom, "roulette"));
-      unsubscribeRoulette = onSnapshot(q, (snapshot) => {
-        rouletteItems = [];
-        snapshot.forEach(docSnap => rouletteItems.push({ id: docSnap.id, ...docSnap.data() }));
-        drawRoulette();
-        renderRouletteList();
-      });
-    }
-
-    window.addRouletteItem = async function() {
-      if (!currentRoom) return alert("部屋に入ってください");
-      const name = document.getElementById("rouletteItemInput").value.trim();
-      const weight = parseInt(document.getElementById("rouletteWeightInput").value) || 10;
-      if (!name) return;
-      await addDoc(collection(db, "rooms", currentRoom, "roulette"), { name, weight });
-      document.getElementById("rouletteItemInput").value = "";
-    };
-
-    window.updateWeight = async function(id, newWeight) {
-      await updateDoc(doc(db, "rooms", currentRoom, "roulette", id), { weight: parseInt(newWeight) || 1 });
-    };
-
-    window.deleteRouletteItem = async function(id) {
-      await deleteDoc(doc(db, "rooms", currentRoom, "roulette", id));
-    };
-
-    // ★追加機能：均等割り
-    window.equalizeWeights = async function() {
-      if (!currentRoom) return alert("部屋に入ってください");
-      if (rouletteItems.length === 0) return alert("項目がありません");
-      
-      const averageWeight = 10; // 全て「10」に統一
-      for (const item of rouletteItems) {
-        await updateDoc(doc(db, "rooms", currentRoom, "roulette", item.id), { weight: averageWeight });
-      }
-      alert("すべての確率を均等にしました！");
-    };
-
-    function renderRouletteList() {
-      const list = document.getElementById("rouletteList");
-      const totalWeight = rouletteItems.reduce((sum, item) => sum + item.weight, 0);
-      
-      list.innerHTML = rouletteItems.map(item => {
-        const percent = totalWeight > 0 ? Math.round((item.weight / totalWeight) * 100) : 0;
-        return `
-          <div class="roulette-item">
-            <div style="font-weight:bold;">${item.name} <span style="font-size:11px; color:#6b7280;">(${percent}%)</span></div>
-            <div style="display:flex; gap:8px;">
-              <input type="number" class="weight-input" value="${item.weight}" onchange="updateWeight('${item.id}', this.value)">
-              <button class="delete-btn" onclick="deleteRouletteItem('${item.id}')">✕</button>
-            </div>
+        daysContainer.innerHTML += `
+          <div class="day-cell ${isSelected}" onclick="selectDate('${dateString}', this)">
+            <span>${date}</span>
+            ${dotsHtml}
           </div>
         `;
-      }).join("");
+      }
     }
 
-    const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
+    function changeMonth(delta) {
+      currentDate.setMonth(currentDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function selectDate(dateStr, element) {
+      selectedFullDate = dateStr;
+
+      document.querySelectorAll('.day-cell').forEach(cell => cell.classList.remove('selected'));
+      element.classList.add('selected');
+
+      document.getElementById('selectedDateTitle').innerText = `📅 選択中: ${dateStr}`;
+      updateExistingNotes();
+      document.getElementById('timeSelectorPanel').style.display = 'block';
+    }
+
+    function updateExistingNotes() {
+      const daySchedules = scheduleData.filter(item => item.date === selectedFullDate);
+      const notesList = document.getElementById('existingNotesList');
+
+      if (daySchedules.length === 0) {
+        notesList.innerHTML = '<span style="color:#9ca3af;">（まだ登録された予定はありません）</span>';
+      } else {
+        notesList.innerHTML = daySchedules.map(item => {
+          const badge = item.status === 'ok' ? '🟢 空き' : '🔴 予定あり';
+          const reasonText = item.reason ? `【${item.reason}】` : '';
+          return `
+            <div class="existing-note-item">
+              <span>${badge}</span>
+              <span>⏰ ${item.time}</span>
+              <strong style="color:#1e293b;">${reasonText}</strong>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    let currentStatus = 'ok';
+
+    function setStatus(status) {
+      currentStatus = status;
+      const btnOk = document.getElementById('btnOk');
+      const btnNg = document.getElementById('btnNg');
+
+      if (status === 'ok') {
+        btnOk.classList.add('active');
+        btnNg.classList.remove('active');
+      } else {
+        btnNg.classList.add('active');
+        btnOk.classList.remove('active');
+      }
+    }
+
+    function addSchedule() {
+      const start = document.getElementById('startTime').value;
+      const end = document.getElementById('endTime').value;
+      const reason = document.getElementById('reasonInput').value.trim();
+
+      if (!selectedFullDate || !start || !end) {
+        alert('日付と時間を正しく選択してください');
+        return;
+      }
+
+      const newItem = {
+        id: Date.now(),
+        date: selectedFullDate,
+        time: `${start} 〜 ${end}`,
+        reason: reason,
+        status: currentStatus
+      };
+      scheduleData.push(newItem);
+      saveDataToStorage();
+
+      document.getElementById('reasonInput').value = '';
+
+      renderCalendar();
+      updateExistingNotes();
+      renderSchedules();
+    }
+
+    function deleteSchedule(id) {
+      scheduleData = scheduleData.filter(item => item.id !== id);
+      saveDataToStorage();
+      renderCalendar();
+      if (selectedFullDate) updateExistingNotes();
+      renderSchedules();
+    }
+
+    function renderSchedules() {
+      const listContainer = document.getElementById('scheduleList');
+      if (scheduleData.length === 0) {
+        listContainer.innerHTML = '<p style="color: #9ca3af; font-size: 13px;">まだ時間帯が追加されていません。</p>';
+        return;
+      }
+
+      listContainer.innerHTML = scheduleData.map(item => {
+        const isOk = item.status === 'ok';
+        const bgClass = isOk ? 'status-ok' : 'status-ng';
+        const badge = isOk ? '🟢 予定なし（空き）' : '🔴 予定あり（NG）';
+
+        return `
+          <div class="schedule-item ${bgClass}">
+            <div>
+              <div style="font-size: 11px; opacity: 0.8;">${item.date}</div>
+              <div>⏰ ${item.time} (${badge})</div>
+              ${item.reason ? `<div style="font-size: 12px; margin-top:2px;">💬 理由: <strong>${item.reason}</strong></div>` : ''}
+            </div>
+            <button class="delete-btn" onclick="deleteSchedule(${item.id})">🗑️ 取消</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- 3. 🎰 行き先ルーレット処理 ---
+    const availableColors = [
+      { name: "🔴 赤色の丸", value: "#dd2e44" },
+      { name: "🟠 オレンジ色の丸", value: "#f58220" },
+      { name: "🟡 黄色の丸", value: "#fdcb58" },
+      { name: "🟢 緑色の丸", value: "#78b159" },
+      { name: "🔵 青色の丸", value: "#55acee" },
+      { name: "🟣 紫色の丸", value: "#aa8ed6" },
+      { name: "🟤 茶色の丸", value: "#c1694f" },
+      { name: "⬛ 黒色の丸", value: "#31373d" },
+      { name: "⚪ 白色の丸", value: "#e6e7e8" }
+    ];
+
+    let rouletteOptions = [
+      { id: 1, name: "カラオケ", weight: 25, color: "#dd2e44" },
+      { id: 2, name: "ボウリング", weight: 25, color: "#55acee" },
+      { id: 3, name: "カフェ", weight: 25, color: "#78b159" },
+      { id: 4, name: "映画", weight: 25, color: "#fdcb58" }
+    ];
+    let currentRotation = 0;
+    let isSpinning = false;
+
+    function renderOptions() {
+      const container = document.getElementById('optionsList');
+      container.innerHTML = rouletteOptions.map((opt) => `
+        <div class="option-row">
+          <select class="color-select" onchange="updateOptionColor(${opt.id}, this.value)">
+            ${availableColors.map(c => `
+              <option value="${c.value}" ${opt.color === c.value ? 'selected' : ''}>${c.name}</option>
+            `).join('')}
+          </select>
+          <input type="text" class="input-style" value="${opt.name}" onchange="updateOptionName(${opt.id}, this.value)">
+          <input type="number" class="input-style prob-input" value="${opt.weight}" min="1" onchange="updateOptionWeight(${opt.id}, this.value)">
+          <span style="font-size: 12px; font-weight: bold;">%</span>
+          <button class="delete-btn" onclick="deleteOption(${opt.id})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function addOption() {
+      if (rouletteOptions.length >= 9) {
+        alert('候補は最大9個までです');
+        return;
+      }
+
+      const input = document.getElementById('newOptionInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const newId = Date.now();
+      const color = availableColors[rouletteOptions.length % availableColors.length].value;
+      rouletteOptions.push({ id: newId, name: name, weight: 10, color: color });
+      
+      input.value = '';
+      equalizeProbabilities();
+    }
+
+    function deleteOption(id) {
+      if (rouletteOptions.length <= 1) {
+        alert('候補は少なくとも1つ以上必要です');
+        return;
+      }
+      rouletteOptions = rouletteOptions.filter(o => o.id !== id);
+      equalizeProbabilities();
+    }
+
+    function updateOptionName(id, val) {
+      const opt = rouletteOptions.find(o => o.id === id);
+      if (opt) opt.name = val;
+      saveDataToStorage();
+      drawRoulette();
+    }
+
+    function updateOptionWeight(id, val) {
+      const opt = rouletteOptions.find(o => o.id === id);
+      if (opt) opt.weight = Math.max(1, parseFloat(val) || 1);
+      saveDataToStorage();
+      drawRoulette();
+    }
+
+    function updateOptionColor(id, newColor) {
+      const opt = rouletteOptions.find(o => o.id === id);
+      if (opt) opt.color = newColor;
+      saveDataToStorage();
+      drawRoulette();
+    }
+
+    function equalizeProbabilities() {
+      if (rouletteOptions.length === 0) return;
+      const equalWeight = Math.floor(100 / rouletteOptions.length);
+      rouletteOptions.forEach(o => o.weight = equalWeight);
+      saveDataToStorage();
+      renderOptions();
+      drawRoulette();
+    }
+
     function drawRoulette() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const totalWeight = rouletteItems.reduce((sum, item) => sum + item.weight, 0);
+      const canvas = document.getElementById('rouletteCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const totalWeight = rouletteOptions.reduce((sum, o) => sum + Number(o.weight), 0);
+
+      ctx.clearRect(0, 0, 300, 300);
+
       if (totalWeight === 0) return;
 
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = canvas.width / 2;
-      let startAngle = currentAngle;
+      let startAngle = 0;
+      rouletteOptions.forEach(opt => {
+        const sliceAngle = (opt.weight / totalWeight) * 2 * Math.PI;
 
-      rouletteItems.forEach((item, i) => {
-        const sliceAngle = (item.weight / totalWeight) * 2 * Math.PI;
         ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
-        ctx.fillStyle = colors[i % colors.length];
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 150, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+        ctx.fillStyle = opt.color;
         ctx.fill();
 
         ctx.save();
-        ctx.translate(centerX, centerY);
+        ctx.translate(150, 150);
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = "right";
-        ctx.fillStyle = "white";
-        ctx.font = "bold 16px sans-serif";
-        ctx.fillText(item.name, radius - 20, 5);
+
+        if (opt.color === "#e6e7e8") {
+          ctx.fillStyle = "#1f2937";
+          ctx.shadowColor = "rgba(255,255,255,0.8)";
+        } else {
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowColor = "rgba(0,0,0,0.6)";
+        }
+
+        ctx.font = "bold 14px sans-serif";
+        ctx.shadowBlur = 4;
+        ctx.fillText(opt.name, 130, 5);
         ctx.restore();
 
         startAngle += sliceAngle;
       });
     }
 
-    window.startRoulette = function() {
-      if (rouletteItems.length === 0) return alert("項目を追加してください！");
-      const totalWeight = rouletteItems.reduce((sum, item) => sum + item.weight, 0);
-      
-      const spinTimeTotal = 3000 + Math.random() * 2000;
-      let spinTime = 0;
-      const spinAngleStart = Math.random() * 10 + 10;
-      
-      function rotateWheel() {
-        spinTime += 30;
-        if (spinTime >= spinTimeTotal) { stopRoulette(totalWeight); return; }
-        const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
-        currentAngle += (spinAngle * Math.PI / 180);
-        drawRoulette();
-        requestAnimationFrame(rotateWheel);
-      }
-      rotateWheel();
-    };
+    function spinRoulette() {
+      if (isSpinning || rouletteOptions.length === 0) return;
+      isSpinning = true;
 
-    function stopRoulette(totalWeight) {
-      const degrees = (currentAngle * 180 / Math.PI) % 360;
-      const arrowAngle = (270 - degrees + 360) % 360;
-      
-      let sumAngle = 0;
-      let winner = "";
-      for (let i = 0; i < rouletteItems.length; i++) {
-        const sliceAngle = (rouletteItems[i].weight / totalWeight) * 360;
-        if (arrowAngle >= sumAngle && arrowAngle < sumAngle + sliceAngle) {
-          winner = rouletteItems[i].name;
+      const spinBtn = document.getElementById('spinBtn');
+      const resultBox = document.getElementById('resultBox');
+      spinBtn.disabled = true;
+      resultBox.style.display = 'none';
+
+      const totalWeight = rouletteOptions.reduce((sum, o) => sum + Number(o.weight), 0);
+      let rand = Math.random() * totalWeight;
+      let accumulatedWeight = 0;
+      let winningIndex = 0;
+
+      for (let i = 0; i < rouletteOptions.length; i++) {
+        accumulatedWeight += Number(rouletteOptions[i].weight);
+        if (rand <= accumulatedWeight) {
+          winningIndex = i;
           break;
         }
-        sumAngle += sliceAngle;
       }
 
-      document.getElementById('resultText').innerText = winner;
-      document.getElementById('resultModal').style.display = "flex";
+      let startAngle = 0;
+      for (let i = 0; i < winningIndex; i++) {
+        startAngle += (rouletteOptions[i].weight / totalWeight) * 360;
+      }
+      const sliceDeg = (rouletteOptions[winningIndex].weight / totalWeight) * 360;
+      const targetSectorDeg = startAngle + Math.random() * sliceDeg;
+
+      const extraSpin = 360 * 5; 
+      const targetRotation = currentRotation + extraSpin + (360 - (targetSectorDeg % 360)) - (currentRotation % 360) - 90;
+
+      currentRotation = targetRotation;
+      const canvas = document.getElementById('rouletteCanvas');
+      canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        spinBtn.disabled = false;
+        document.getElementById('resultText').innerText = rouletteOptions[winningIndex].name;
+        resultBox.style.display = 'block';
+      }, 4000);
     }
 
-    function easeOut(t, b, c, d) {
-      const ts = (t /= d) * t;
-      const tc = ts * t;
-      return b + c * (tc + -3 * ts + 3 * t);
-    }
+    // --- 4. 💬 レビュー＆管理者機能処理 ---
+    let reviewData = [
+      { id: 1, author: "たろう", rating: 5, comment: "使いやすくて友達との予定合わせが楽になりました！", date: "2026/07/20" }
+    ];
+    let selectedRating = 5;
 
-    window.closeModal = function() {
-      document.getElementById('resultModal').style.display = "none";
-    };
-
-
-    // --- 6. レビュー機能 ---
-    window.submitReview = async function() {
-      const rate = document.querySelector('input[name="rate"]:checked').value;
-      const name = document.getElementById('reviewName').value.trim() || "名無しさん";
-      const comment = document.getElementById('reviewComment').value.trim();
-      
-      if (!comment) return alert("感想を入力してください！");
-      try {
-        await addDoc(collection(db, "reviews"), { rate: parseInt(rate), name, comment, createdAt: serverTimestamp() });
-        alert("レビューを送信しました！ありがとうございます！");
-        document.getElementById('reviewComment').value = "";
-      } catch (e) { alert("エラー: " + e.message); }
-    };
-
-    // --- 管理者専用レビュー閲覧 ---
-    let currentAdminFilter = 'all';
-    window.setAdminFilter = function(filterVal) {
-      currentAdminFilter = filterVal;
-      document.querySelectorAll('#adminTab .filter-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      renderAdminReviews();
-    };
-
-    let allReviewsData = [];
-    function subscribeReviews() {
-      const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
-      unsubscribeReviews = onSnapshot(q, (snapshot) => {
-        allReviewsData = [];
-        snapshot.forEach(docSnap => {
-          allReviewsData.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        renderAdminReviews();
+    function setRating(rating) {
+      selectedRating = rating;
+      const stars = document.querySelectorAll('#starRating span');
+      stars.forEach((star, idx) => {
+        if (idx < rating) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
+        }
       });
     }
 
-    function renderAdminReviews() {
-      const list = document.getElementById("adminReviewList");
-      const filtered = currentAdminFilter === 'all' 
-        ? allReviewsData 
-        : allReviewsData.filter(r => r.rate === parseInt(currentAdminFilter));
-        
-      if (filtered.length === 0) {
-        list.innerHTML = `<p style="color:#6b7280;">レビューがありません。</p>`;
+    function submitReview() {
+      const author = document.getElementById('reviewAuthor').value.trim() || "名無しさん";
+      const comment = document.getElementById('reviewComment').value.trim();
+
+      if (!comment) {
+        alert('コメントを入力してください');
         return;
       }
-      
-      list.innerHTML = filtered.map(rev => {
-        const dateStr = rev.createdAt ? new Date(rev.createdAt.toDate()).toLocaleString() : "日時不明";
-        return `
-          <div class="review-item">
-            <div class="review-stars">${'★'.repeat(rev.rate)}${'☆'.repeat(5 - rev.rate)}</div>
-            <div class="review-comment">${rev.comment}</div>
-            <div class="review-meta">${rev.name} | ${dateStr} 
-              <button class="delete-btn" style="margin-left:8px;" onclick="deleteReview('${rev.id}')">削除</button>
-            </div>
-          </div>
-        `;
-      }).join("");
+
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
+
+      const newReview = {
+        id: Date.now(),
+        author: author,
+        rating: selectedRating,
+        comment: comment,
+        date: dateStr
+      };
+
+      reviewData.unshift(newReview);
+      saveDataToStorage();
+
+      document.getElementById('reviewAuthor').value = '';
+      document.getElementById('reviewComment').value = '';
+      setRating(5);
+
+      alert('🎉 レビューを送信しました！ありがとうございます！');
     }
 
-    window.deleteReview = async function(id) {
-      if(confirm("このレビューを削除しますか？")) await deleteDoc(doc(db, "reviews", id));
-    };
+    function filterReviews(star, btnElement) {
+      if (btnElement) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+      renderReviews(star);
+    }
+
+    function renderReviews(starFilter) {
+      const container = document.getElementById('reviewList');
+      let filtered = reviewData;
+
+      if (starFilter !== 'all') {
+        filtered = reviewData.filter(r => r.rating === starFilter);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="color: #6b7280; font-size:13px;">該当するレビューはありません。</p>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(r => `
+        <div class="review-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="font-size:14px; color:#1e293b;">${r.author} 様</strong>
+            <span style="font-size:12px; color:#9ca3af;">${r.date}</span>
+          </div>
+          <div style="color:#f59e0b; font-size:14px; margin-bottom:6px;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+          <div style="font-size:13px; color:#374151; white-space:pre-wrap;">${r.comment}</div>
+        </div>
+      `).join('');
+    }
   </script>
+
 </body>
 </html>
