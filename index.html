@@ -2,219 +2,550 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>シェアカレンダー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>シェアカレンダー - 予定共有＆日程調整</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f3f4f6;
-      margin: 0;
-      padding: 0;
-      padding-bottom: 80px;
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --bg-dark: #0f172a;
+      --bg-card: #ffffff;
+      --bg-app: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
     }
 
-    /* ヘッダー */
-    .header {
-      background: white;
-      padding: 16px;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      padding-bottom: 90px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- ヘッダーバー --- */
+    .app-header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+    }
+
+    .header-container {
+      max-width: 640px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #e5e7eb;
-      position: sticky;
-      top: 0;
-      z-index: 10;
     }
-    .header h1 { margin: 0; font-size: 18px; color: #1f2937; }
-    
-    .admin-btn {
-      display: none; 
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 6px 12px;
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    .status-badge.online { background: #dcfce7; color: #15803d; }
+    .status-badge.offline { background: #fef3c7; color: #b45309; }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      padding: 5px 12px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
     }
 
-    /* メインエリア */
-    .container { padding: 16px; max-width: 500px; margin: 0 auto; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .user-pill:hover {
+      background: #e2e8f0;
+    }
 
-    /* カード */
+    .admin-badge {
+      background: linear-gradient(135deg, #ef4444, #f43f5e);
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    }
+
+    /* アナウンスバナー */
+    .announcement-banner {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+      padding: 10px 16px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.2);
+    }
+
+    /* メインコンテナ */
+    .main-container {
+      max-width: 640px;
+      margin: 16px auto;
+      padding: 0 16px;
+    }
+
+    /* タブ切り替え表示 */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease-out; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* カードコンポーネント */
     .card {
-      background: white;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
       padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 16px;
     }
 
-    /* --- 月間カレンダーUI --- */
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* グループ選択・共有エリア */
+    .group-selector-card {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: white;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .group-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .group-code-badge {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .group-btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-glass {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-glass:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* カレンダーUI */
     .calendar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
     }
-    .calendar-header h3 { margin: 0; font-size: 18px; }
-    .month-btn {
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
+
+    .calendar-header h3 {
+      font-size: 18px;
+      font-weight: 800;
     }
+
+    .btn-icon {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-icon:hover { background: #e2e8f0; }
+
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 6px;
       text-align: center;
     }
+
     .weekday {
-      font-size: 13px;
-      font-weight: bold;
-      color: #6b7280;
-      padding: 6px 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 8px 0;
     }
-    .weekday.sun { color: #ef4444; }
+    .weekday.sun { color: var(--danger); }
     .weekday.sat { color: #3b82f6; }
-    
+
     .day-cell {
-      min-height: 52px;
+      min-height: 58px;
       padding: 6px 2px;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      background: #f9fafb;
+      background: #f8fafc;
       border: 2px solid transparent;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
+      transition: all 0.15s ease;
     }
-    .day-cell:hover { background: #e0e7ff; }
+
+    .day-cell:hover {
+      background: var(--primary-light);
+      border-color: #c7d2fe;
+    }
+
     .day-cell.selected {
-      background: #4f46e5;
+      background: var(--primary);
       color: white;
       border-color: #3730a3;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
     }
+
+    .day-cell.today {
+      border-color: var(--primary);
+    }
+
     .day-cell.empty { background: transparent; cursor: default; border: none; }
 
-    .status-dots {
+    .matrix-dots {
       display: flex;
       gap: 3px;
       margin-top: 2px;
       height: 8px;
+      align-items: center;
     }
-    .dot {
+
+    .dot-badge {
       width: 7px;
       height: 7px;
       border-radius: 50%;
     }
-    .dot.ok { background-color: #10b981; }
-    .dot.ng { background-color: #ef4444; }
+    .dot-badge.ok { background-color: var(--success); }
+    .dot-badge.maybe { background-color: var(--warning); }
+    .dot-badge.ng { background-color: var(--danger); }
 
-    .time-selector-panel {
-      display: none;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
+    /* 日程調整パネル (誰がNGか・空き状況の詳細) */
+    .schedule-detail-panel {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
       padding: 16px;
-      border-radius: 12px;
       margin-top: 16px;
     }
 
-    .existing-notes-box {
-      background: #ffffff;
-      border: 1px dashed #cbd5e1;
-      padding: 10px 12px;
-      border-radius: 8px;
-      margin-bottom: 14px;
+    .matrix-summary-box {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
     }
-    .existing-note-item {
-      font-size: 13px;
-      margin-bottom: 4px;
+
+    .summary-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .summary-tag.all-ok { background: #dcfce7; color: #15803d; }
+    .summary-tag.has-ng { background: #fee2e2; color: #991b1b; }
+    .summary-tag.no-data { background: #f1f5f9; color: var(--text-muted); }
+
+    .member-status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .member-status-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      border-left: 4px solid #cbd5e1;
     }
-    .existing-note-item:last-child { margin-bottom: 0; }
+    .member-status-item.status-ok { border-left-color: var(--success); background: #f0fdf4; }
+    .member-status-item.status-maybe { border-left-color: var(--warning); background: #fffbeb; }
+    .member-status-item.status-ng { border-left-color: var(--danger); background: #fef2f2; }
 
-    .input-style {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 14px;
-      box-sizing: border-box;
+    /* フォーム要素 */
+    .form-group {
+      margin-bottom: 14px;
     }
-    .status-btn-group {
-      display: flex;
-      gap: 10px;
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .input-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      background: white;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .status-toggle-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
       margin: 12px 0;
     }
-    .status-btn {
-      flex: 1;
-      padding: 10px;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
+
+    .status-toggle-btn {
+      padding: 10px 6px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
       background: white;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 12px;
       cursor: pointer;
-    }
-    .status-btn.ok.active { background: #d1fae5; border-color: #10b981; color: #047857; }
-    .status-btn.ng.active { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
-    
-    .add-time-btn {
-      width: 100%;
-      background: #4f46e5;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 15px;
+      text-align: center;
+      transition: all 0.2s;
     }
 
-    .schedule-item {
+    .status-toggle-btn.ok.active { background: #d1fae5; border-color: var(--success); color: #065f46; }
+    .status-toggle-btn.maybe.active { background: #fef3c7; border-color: var(--warning); color: #92400e; }
+    .status-toggle-btn.ng.active { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* レビュー評価UI */
+    .star-rating-box {
+      display: flex;
+      gap: 8px;
+      font-size: 32px;
+      cursor: pointer;
+      margin: 8px 0 16px 0;
+    }
+
+    .star-rating-box span {
+      color: #cbd5e1;
+      transition: color 0.15s, transform 0.15s;
+    }
+
+    .star-rating-box span:hover,
+    .star-rating-box span.active {
+      color: var(--warning);
+      transform: scale(1.1);
+    }
+
+    .review-card-item {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .review-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      font-weight: bold;
+      margin-bottom: 6px;
     }
-    .schedule-item.status-ok { background: #d1fae5; color: #047857; border-left: 5px solid #10b981; }
-    .schedule-item.status-ng { background: #fee2e2; color: #b91c1c; border-left: 5px solid #ef4444; }
-    
-    .delete-btn {
-      background: rgba(0, 0, 0, 0.08);
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-      font-weight: bold;
-      color: inherit;
-    }
-    .delete-btn:hover { background: rgba(0, 0, 0, 0.15); }
 
-    /* --- 🎰 ルーレットUI --- */
+    .review-author {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .review-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .pill-btn {
+      background: white;
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .pill-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* ルーレット */
     .roulette-container {
       position: relative;
-      width: 260px;
-      height: 260px;
+      width: 250px;
+      height: 250px;
       margin: 20px auto;
     }
+
     .roulette-pointer {
       position: absolute;
       top: -12px;
@@ -224,137 +555,180 @@
       height: 0;
       border-left: 12px solid transparent;
       border-right: 12px solid transparent;
-      border-top: 24px solid #ef4444;
+      border-top: 24px solid var(--danger);
       z-index: 10;
     }
+
     #rouletteCanvas {
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
       transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 0.99);
     }
-    .spin-btn {
-      width: 100%;
-      background: #10b981;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 18px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-    }
-    .spin-btn:disabled { background: #9ca3af; cursor: not-allowed; }
-    
-    .option-row {
+
+    /* モード・モーダル */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
     }
-    .color-select {
-      padding: 8px 4px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
       background: white;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .prob-input {
-      width: 60px;
-      text-align: right;
-    }
-
-    /* --- 💬 レビューUI --- */
-    .star-rating {
-      display: flex;
-      gap: 8px;
-      font-size: 28px;
-      cursor: pointer;
-      margin: 8px 0 16px 0;
-    }
-    .star-rating span { color: #d1d5db; transition: color 0.2s; }
-    .star-rating span.active { color: #f59e0b; }
-
-    .review-card {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
+      border-radius: var(--radius-lg);
+      max-width: 440px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
     }
 
-    /* 下部ナビゲーション */
+    .modal-overlay.open .modal-card {
+      transform: scale(1);
+    }
+
+    /* 下部固定ナビゲーション */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 65px;
-      background: white;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
       display: flex;
-      border-top: 1px solid #e5e7eb;
-      z-index: 100;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 90;
+      max-width: 640px;
+      margin: 0 auto;
     }
-    .nav-item {
+
+    .nav-btn {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #9ca3af;
+      color: var(--text-muted);
       font-size: 11px;
-      cursor: pointer;
-      border: none;
+      font-weight: 600;
       background: none;
-    }
-    .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
-    .nav-item.active { color: #4f46e5; font-weight: bold; }
-
-    /* フィルターボタン */
-    .filter-group {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
-    }
-    .filter-btn {
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
+      border: none;
       cursor: pointer;
-      white-space: nowrap;
+      gap: 3px;
+      transition: color 0.2s;
     }
-    .filter-btn.active {
-      background: #4f46e5;
+
+    .nav-btn .nav-icon {
+      font-size: 20px;
+    }
+
+    .nav-btn.active {
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    /* トースト通知 */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #1e293b;
       color: white;
-      border-color: #4f46e5;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      animation: slideDown 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>🎉 シェアカレンダー</h1>
-    <button id="adminBtn" class="admin-btn" onclick="openAdmin()">🔒 管理者画面</button>
-  </div>
+  <!-- 📢 アナウンスバナー -->
+  <div id="announcementBanner" class="announcement-banner"></div>
 
-  <div class="container">
+  <!-- 🔝 ヘッダー -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-title">
+        <span>📅</span> シェアカレンダー
+      </div>
+      <div class="header-actions">
+        <span id="onlineBadge" class="status-badge online">🟢 オンライン</span>
+        <button id="userPill" class="user-pill" onclick="openAuthModal()">
+          <span id="userAvatar">👤</span>
+          <span id="userName">ゲスト</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <!-- 1. カレンダータブ -->
-    <div id="calendarTab" class="tab-content active">
+  <!-- 📱 メインコンテンツエリア -->
+  <main class="main-container">
+
+    <!-- 1. 📅 カレンダー＆予定共有・調整タブ -->
+    <div id="tabCalendar" class="tab-content active">
+      
+      <!-- グループ選択・共有カード -->
+      <div class="group-selector-card">
+        <div class="group-header-row">
+          <div>
+            <div style="font-size:11px; opacity:0.8; font-weight:700; text-transform:uppercase;">参加中のグループ</div>
+            <h2 id="currentGroupName" style="font-size:20px; font-weight:800; margin-top:2px;">マイ個人カレンダー</h2>
+          </div>
+          <!-- 個人カレンダーの場合はグループコード要素を非表示 -->
+          <div id="groupCodeWrapper" style="text-align:right; display:none;">
+            <div style="font-size:10px; opacity:0.7;">グループコード</div>
+            <div id="currentGroupCode" class="group-code-badge"></div>
+          </div>
+        </div>
+        <div class="group-btn-group">
+          <button id="btnShareLink" class="btn-glass" style="display:none;" onclick="copyShareableUrl()">🔗 共有リンクをコピー</button>
+          <button id="btnCopyCode" class="btn-glass" style="display:none;" onclick="copyGroupCode()">📋 コードをコピー</button>
+          <button class="btn-glass" onclick="openGroupModal()">👥 グループ作成/参加</button>
+        </div>
+      </div>
+
+      <!-- 月間カレンダーカード -->
       <div class="card">
-        <h2>📅 日程の選択</h2>
-        
         <div class="calendar-header">
-          <button class="month-btn" onclick="changeMonth(-1)">＜</button>
-          <h3 id="currentMonthTitle">2026年 7月</h3>
-          <button class="month-btn" onclick="changeMonth(1)">＞</button>
+          <button class="btn-icon" onclick="changeMonth(-1)">❮</button>
+          <h3 id="calendarMonthTitle">2026年 7月</h3>
+          <button class="btn-icon" onclick="changeMonth(1)">❯</button>
         </div>
 
         <div class="calendar-grid">
@@ -366,231 +740,887 @@
           <div class="weekday">金</div>
           <div class="weekday sat">土</div>
         </div>
-        <div id="calendarDays" class="calendar-grid"></div>
+        <div id="calendarDaysGrid" class="calendar-grid"></div>
 
-        <div id="timeSelectorPanel" class="time-selector-panel">
-          <h3 id="selectedDateTitle" style="margin-top:0; font-size:16px; color:#4f46e5;">選択中: --</h3>
-          
-          <div id="existingNotesContainer" class="existing-notes-box">
-            <div style="font-size:12px; font-weight:bold; color:#6b7280; margin-bottom:4px;">📌 この日の登録済み理由・予定:</div>
-            <div id="existingNotesList"></div>
+        <!-- 選択した日の空き状況＆NGメンバー詳細パネル (誰がNGか一目でわかる!) -->
+        <div id="scheduleDetailPanel" class="schedule-detail-panel" style="display:none;">
+          <h4 id="selectedDateTitle" style="font-size:16px; font-weight:800; color:var(--primary); margin-bottom:12px;">📅 選択中の日付: --</h4>
+
+          <div class="matrix-summary-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; font-weight:800;">👥 メンバーの空き状況・NG理由一覧</span>
+              <span id="overallStatusTag" class="summary-tag no-data">未登録</span>
+            </div>
+            <div id="memberStatusList" class="member-status-list">
+              <!-- 動的生成 -->
+            </div>
           </div>
 
-          <label style="font-size: 12px; font-weight: bold; color: #6b7280;">時間帯を選択</label>
-          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: 12px;">
-            <input type="time" id="startTime" class="input-style" value="13:00">
-            <span>〜</span>
-            <input type="time" id="endTime" class="input-style" value="17:00">
+          <!-- 自分の予定入力フォーム -->
+          <div style="background:white; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+            <h5 style="font-size:13px; font-weight:800; margin-bottom:10px;">✏️ 自分の予定を入力・追加</h5>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" class="form-group">
+              <div>
+                <label class="form-label">開始時間</label>
+                <input type="time" id="startTimeInput" class="input-control" value="13:00">
+              </div>
+              <div>
+                <label class="form-label">終了時間</label>
+                <input type="time" id="endTimeInput" class="input-control" value="17:00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">理由・コメント（例: バイト、要相談、旅行など）</label>
+              <input type="text" id="reasonInput" class="input-control" placeholder="理由を入力 (任意)">
+            </div>
+
+            <div class="status-toggle-group">
+              <button id="btnStatusOk" class="status-toggle-btn ok active" onclick="setFormStatus('ok')">🟢 空き (OK)</button>
+              <button id="btnStatusMaybe" class="status-toggle-btn maybe" onclick="setFormStatus('maybe')">🔺 要相談</button>
+              <button id="btnStatusNg" class="status-toggle-btn ng" onclick="setFormStatus('ng')">🔴 予定あり (NG)</button>
+            </div>
+
+            <button class="btn-primary" onclick="saveScheduleEntry()">✨ 予定を保存・更新する</button>
           </div>
-
-          <label style="font-size: 12px; font-weight: bold; color: #6b7280;">理由（任意）</label>
-          <input type="text" id="reasonInput" class="input-style" placeholder="例: バイト、学校、旅行など" style="margin-top: 4px;">
-
-          <div class="status-btn-group">
-            <button id="btnOk" class="status-btn ok active" onclick="setStatus('ok')">🟢 予定なし（空き）</button>
-            <button id="btnNg" class="status-btn ng" onclick="setStatus('ng')">🔴 予定あり（NG）</button>
-          </div>
-
-          <button class="add-time-btn" onclick="addSchedule()">この時間帯を追加する</button>
-        </div>
-
-        <h3 style="margin-top: 24px;">📋 登録された時間帯一覧</h3>
-        <div id="scheduleList">
-          <p style="color: #9ca3af; font-size: 13px;">まだ時間帯が追加されていません。</p>
         </div>
 
       </div>
+
+      <!-- 登録された全日程リスト -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">📋 登録された日程・調整一覧</h3>
+        </div>
+        <div id="allSchedulesList">
+          <p style="color: var(--text-muted); font-size:13px;">まだ日程が登録されていません。</p>
+        </div>
+      </div>
+
     </div>
 
-    <!-- 2. ルーレットタブ -->
-    <div id="rouletteTab" class="tab-content">
+    <!-- 2. 💬 レビュー＆フィードバックタブ -->
+    <div id="tabReview" class="tab-content">
       <div class="card">
-        <h2>🎰 行き先ルーレット</h2>
-        
+        <div class="card-header">
+          <h3 class="card-title">💬 レビュー＆ご意見箱</h3>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+          アプリの使い心地や新機能のリクエスト、ご意見をお気軽に投稿してください！
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">評価</label>
+          <div class="star-rating-box" id="starRatingBox">
+            <span onclick="setRating(1)">★</span>
+            <span onclick="setRating(2)">★</span>
+            <span onclick="setRating(3)">★</span>
+            <span onclick="setRating(4)">★</span>
+            <span onclick="setRating(5)">★</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ニックネーム</label>
+          <input type="text" id="reviewAuthorInput" class="input-control" placeholder="例: たろう">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">コメント</label>
+          <textarea id="reviewCommentInput" class="input-control" rows="3" placeholder="使いやすかった点や予定共有機能への要望など"></textarea>
+        </div>
+
+        <button class="btn-primary" onclick="submitReview()">🚀 レビューを送信する</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">⭐ 届いたレビュー</h3>
+          <span id="averageRatingBadge" style="font-size:14px; font-weight:800; color:var(--warning);">★ -- (--件)</span>
+        </div>
+
+        <div class="filter-pills">
+          <button class="pill-btn active" onclick="filterReviews('all', this)">すべて</button>
+          <button class="pill-btn" onclick="filterReviews(5, this)">★5</button>
+          <button class="pill-btn" onclick="filterReviews(4, this)">★4</button>
+          <button class="pill-btn" onclick="filterReviews(3, this)">★3</button>
+          <button class="pill-btn" onclick="filterReviews(2, this)">★2</button>
+          <button class="pill-btn" onclick="filterReviews(1, this)">★1</button>
+        </div>
+
+        <div id="reviewsContainer">
+          <p style="color:var(--text-muted); font-size:13px;">レビューを読み込んでいます...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 🎰 行き先ルーレットタブ -->
+    <div id="tabRoulette" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">🎰 行き先決定ルーレット</h3>
+        </div>
+
         <div class="roulette-container">
           <div class="roulette-pointer"></div>
           <canvas id="rouletteCanvas" width="300" height="300"></canvas>
         </div>
 
-        <button id="spinBtn" class="spin-btn" onclick="spinRoulette()">🎯 ルーレットを回す！</button>
+        <button id="spinBtn" class="btn-primary" style="background:var(--success);" onclick="spinRoulette()">🎯 ルーレットを回す！</button>
 
-        <div id="resultBox" style="display:none; margin-top:16px; padding:12px; background:#e0e7ff; border-radius:12px; text-align:center; font-weight:bold; color:#3730a3; font-size:18px;">
-          決定: <span id="resultText">--</span>
+        <div id="rouletteResultBox" style="display:none; margin-top:16px; padding:14px; background:#e0e7ff; border-radius:var(--radius-md); text-align:center; font-weight:800; color:var(--primary); font-size:18px;">
+          決定: <span id="rouletteResultText">--</span>
         </div>
 
-        <!-- 候補設定エリア -->
-        <h3 style="margin-top: 24px; display:flex; justify-content:space-between; align-items:center;">
-          <span>📝 候補・確率・色 <span style="font-size:13px; font-weight:normal; color:#6b7280;">(最大9個)</span></span>
-          <button onclick="equalizeProbabilities()" style="font-size:11px; padding:4px 8px; border-radius:6px; background:#f3f4f6; border:1px solid #d1d5db; cursor:pointer;">⚖️ 均等割りにする</button>
-        </h3>
+        <div style="margin-top:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h4 style="font-size:14px; font-weight:800;">📝 選択肢一覧</h4>
+            <button onclick="equalizeRouletteProbabilities()" style="font-size:11px; padding:4px 10px; border-radius:6px; background:#f1f5f9; border:1px solid var(--border-color); cursor:pointer;">⚖️ 均等割にする</button>
+          </div>
+          <div id="rouletteOptionsList"></div>
 
-        <div id="optionsList"></div>
-
-        <div style="display: flex; gap: 8px; margin-top: 12px;">
-          <input type="text" id="newOptionInput" class="input-style" placeholder="新しい行き先（例: カラオケ）">
-          <button onclick="addOption()" style="background:#4f46e5; color:white; border:none; padding:0 16px; border-radius:8px; font-weight:bold; white-space:nowrap; cursor:pointer;">追加</button>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <input type="text" id="newRouletteInput" class="input-control" placeholder="新しい候補（例: ボウリング）">
+            <button class="btn-primary" style="width:auto; white-space:nowrap;" onclick="addRouletteOption()">追加</button>
+          </div>
         </div>
 
       </div>
     </div>
 
-    <!-- 3. レビュータブ -->
-    <div id="reviewTab" class="tab-content">
+    <!-- 4. 👑 管理者専用タブ (Firebaseのアカウントベースで条件分岐表示) -->
+    <div id="tabAdmin" class="tab-content">
       <div class="card">
-        <h2>💬 ご意見・レビュー</h2>
-        <p style="font-size:13px; color:#6b7280;">アプリの感想やご要望をお聞かせください！</p>
-        
-        <label style="font-size:12px; font-weight:bold; color:#4b5563;">評価</label>
-        <div class="star-rating" id="starRating">
-          <span onclick="setRating(1)">★</span>
-          <span onclick="setRating(2)">★</span>
-          <span onclick="setRating(3)">★</span>
-          <span onclick="setRating(4)">★</span>
-          <span onclick="setRating(5)">★</span>
+        <div class="card-header">
+          <h3 class="card-title" style="color:var(--danger);">👑 管理者ダッシュボード</h3>
+          <span class="admin-badge">ADMIN</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+          Firebaseアカウントベースでアクセス権限が確認されました。全データの管理が可能です。
+        </p>
+
+        <!-- 管理者各種設定タブ -->
+        <div class="filter-pills" style="margin-bottom:16px;">
+          <button class="pill-btn active" onclick="switchAdminSubTab('overview', this)">📊 概要</button>
+          <button class="pill-btn" onclick="switchAdminSubTab('reviews', this)">💬 レビュー管理</button>
+          <button class="pill-btn" onclick="switchAdminSubTab('schedules', this)">📅 予定管理</button>
+          <button class="pill-btn" onclick="switchAdminSubTab('notice', this)">📢 お知らせ配信</button>
         </div>
 
-        <label style="font-size:12px; font-weight:bold; color:#4b5563;">ニックネーム（本名ばれてもいいなら可）</label>
-        <input type="text" id="reviewAuthor" class="input-style" placeholder="例: たろう" style="margin-top:4px; margin-bottom:12px;">
+        <!-- サブタブ: 概要 -->
+        <div id="adminSubOverview">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+            <div style="background:#f8fafc; padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+              <div style="font-size:11px; color:var(--text-muted); font-weight:700;">総予定件数</div>
+              <div id="adminTotalSchedules" style="font-size:22px; font-weight:800; color:var(--primary);">--</div>
+            </div>
+            <div style="background:#f8fafc; padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+              <div style="font-size:11px; color:var(--text-muted); font-weight:700;">総レビュー件数</div>
+              <div id="adminTotalReviews" style="font-size:22px; font-weight:800; color:var(--warning);">--</div>
+            </div>
+          </div>
+          <div style="background:#f8fafc; padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:13px;">
+            <div style="font-weight:700; margin-bottom:6px;">🔒 現在のログイン管理者アカウント</div>
+            <div id="adminUserEmailDisplay" style="font-family:monospace; color:var(--primary);">--</div>
+          </div>
+        </div>
 
-        <label style="font-size:12px; font-weight:bold; color:#4b5563;">コメント</label>
-        <textarea id="reviewComment" class="input-style" rows="3" placeholder="使いやすかった点や追加してほしい機能など" style="margin-top:4px; margin-bottom:12px; font-family:inherit;"></textarea>
+        <!-- サブタブ: レビュー削除・管理 -->
+        <div id="adminSubReviews" style="display:none;">
+          <h4 style="font-size:14px; font-weight:800; margin-bottom:12px;">不適切なレビューの削除</h4>
+          <div id="adminReviewsList"></div>
+        </div>
 
-        <button class="add-time-btn" onclick="submitReview()">レビューを送信する</button>
+        <!-- サブタブ: 予定削除・管理 -->
+        <div id="adminSubSchedules" style="display:none;">
+          <h4 style="font-size:14px; font-weight:800; margin-bottom:12px;">グループ＆全予定の管理・削除</h4>
+          <div id="adminSchedulesList"></div>
+        </div>
+
+        <!-- サブタブ: お知らせ設定 -->
+        <div id="adminSubNotice" style="display:none;">
+          <h4 style="font-size:14px; font-weight:800; margin-bottom:12px;">アプリ全体へのアナウンス配信</h4>
+          <div class="form-group">
+            <label class="form-label">お知らせメッセージ</label>
+            <input type="text" id="adminNoticeInput" class="input-control" placeholder="例: 8/1 14:00〜 メンテナンスを実施します">
+          </div>
+          <button class="btn-primary" onclick="saveAdminNotice()">📢 アナウンスを更新</button>
+        </div>
+
       </div>
     </div>
 
-    <!-- 4. 【作者専用】管理者画面 -->
-    <div id="adminTab" class="tab-content">
-      <div class="card">
-        <h2>📊 レビュー管理（作者専用）</h2>
-        <div class="filter-group">
-          <button class="filter-btn active" onclick="filterReviews('all', this)">すべて</button>
-          <button class="filter-btn" onclick="filterReviews(5, this)">★5のみ</button>
-          <button class="filter-btn" onclick="filterReviews(4, this)">★4のみ</button>
-          <button class="filter-btn" onclick="filterReviews(3, this)">★3のみ</button>
-          <button class="filter-btn" onclick="filterReviews(2, this)">★2のみ</button>
-          <button class="filter-btn" onclick="filterReviews(1, this)">★1のみ</button>
-        </div>
-        <div id="reviewList">
-          <p style="color: #6b7280;">ここに届いたレビューが並びます。</p>
-        </div>
-      </div>
-    </div>
+  </main>
 
-  </div>
-
-  <!-- 下部タブ -->
-  <div class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('calendarTab', this)">
-      <span class="icon">📅</span>
+  <!-- 🔻 下部固定ナビゲーションバー -->
+  <nav class="bottom-nav">
+    <button id="navCalendar" class="nav-btn active" onclick="switchMainTab('tabCalendar', this)">
+      <span class="nav-icon">📅</span>
       <span>カレンダー</span>
     </button>
-    <button class="nav-item" onclick="switchTab('rouletteTab', this)">
-      <span class="icon">🎰</span>
-      <span>ルーレット</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('reviewTab', this)">
-      <span class="icon">💬</span>
+    <button id="navReview" class="nav-btn" onclick="switchMainTab('tabReview', this)">
+      <span class="nav-icon">💬</span>
       <span>レビュー</span>
     </button>
+    <button id="navRoulette" class="nav-btn" onclick="switchMainTab('tabRoulette', this)">
+      <span class="nav-icon">🎰</span>
+      <span>ルーレット</span>
+    </button>
+    <button id="navAdmin" class="nav-btn" style="display:none;" onclick="switchMainTab('tabAdmin', this)">
+      <span class="nav-icon">👑</span>
+      <span>管理者</span>
+    </button>
+  </nav>
+
+  <!-- 🔐 認証モーダル (ログイン・会員登録・アカウント設定) -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:18px; font-weight:800;">🔐 アカウント＆ログイン設定</h3>
+        <button onclick="closeAuthModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+
+      <div class="filter-pills" style="margin-bottom:16px;">
+        <button class="pill-btn active" onclick="switchAuthTab('login', this)">ログイン</button>
+        <button class="pill-btn" onclick="switchAuthTab('register', this)">新規登録</button>
+      </div>
+
+      <!-- ログインフォーム -->
+      <div id="authFormLogin">
+        <div class="form-group">
+          <label class="form-label">メールアドレス (管理者 / 会員用)</label>
+          <input type="email" id="loginEmail" class="input-control" placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">パスワード</label>
+          <input type="password" id="loginPassword" class="input-control" placeholder="••••••••">
+        </div>
+        <button id="btnLoginEmail" class="btn-primary" onclick="handleEmailLogin()">🔑 ログイン</button>
+      </div>
+
+      <!-- 会員登録フォーム -->
+      <div id="authFormRegister" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">表示名 (ニックネーム)</label>
+          <input type="text" id="regName" class="input-control" placeholder="例: たろう">
+        </div>
+        <div class="form-group">
+          <label class="form-label">メールアドレス</label>
+          <input type="email" id="regEmail" class="input-control" placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">パスワード (6文字以上)</label>
+          <input type="password" id="regPassword" class="input-control" placeholder="••••••••">
+        </div>
+        <button id="btnRegisterEmail" class="btn-primary" onclick="handleEmailRegister()">✨ 新規アカウント登録</button>
+      </div>
+
+      <div id="loggedInUserActions" style="display:none; margin-top:16px; pt-16 border-top:1px solid var(--border-color);">
+        <button class="btn-danger" style="width:100%; padding:10px;" onclick="handleSignOut()">🚪 ログアウトしてゲストに戻る</button>
+      </div>
+
+    </div>
   </div>
 
-  <script>
-    // --- 1. 基本設定＆タブ切り替え ---
-    function switchTab(tabId, btnElement) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  <!-- 👥 グループ作成/参加モーダル -->
+  <div id="groupModal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:18px; font-weight:800;">👥 グループの選択・作成</h3>
+        <button onclick="closeGroupModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      </div>
 
-      document.getElementById(tabId).classList.add('active');
-      if (btnElement) btnElement.classList.add('active');
+      <div class="form-group">
+        <label class="form-label">新しいグループを作成</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="newGroupNameInput" class="input-control" placeholder="例: 週末BBQ企画">
+          <button class="btn-primary" style="width:auto; white-space:nowrap;" onclick="createNewGroup()">作成</button>
+        </div>
+      </div>
 
-      if (tabId === 'rouletteTab') {
-        drawRoulette();
-      } else if (tabId === 'adminTab') {
-        renderReviews('all');
-      }
-    }
+      <hr style="border:none; border-top:1px solid var(--border-color); margin:16px 0;">
 
-    window.onload = function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('admin') === 'secret99') {
-        localStorage.setItem('isAppAdmin', 'true');
-        alert('🎉 管理者権限を有効化しました！');
-      }
+      <div class="form-group">
+        <label class="form-label">グループコードを入力して参加</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="joinGroupCodeInput" class="input-control" placeholder="6桁コード (例: X8K2P9)">
+          <button class="btn-primary" style="width:auto; white-space:nowrap; background:var(--success);" onclick="joinGroup()">参加</button>
+        </div>
+      </div>
 
-      if (localStorage.getItem('isAppAdmin') === 'true') {
-        document.getElementById('adminBtn').style.display = 'block';
-      }
+      <hr style="border:none; border-top:1px solid var(--border-color); margin:16px 0;">
 
-      // ローカルストレージからデータ読み込み
-      loadDataFromStorage();
+      <h4 style="font-size:13px; font-weight:800; margin-bottom:10px;">マイグループ一覧</h4>
+      <div id="myGroupsList" style="display:flex; flex-direction:column; gap:8px;">
+        <!-- 動的表示 -->
+      </div>
+    </div>
+  </div>
 
-      renderCalendar();
-      renderSchedules();
-      renderOptions();
-      drawRoulette();
-      setRating(5); // デフォルト★5
+  <!-- 🔔 トースト通知コンテナ -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Firebase v10 Modular SDKs & Application Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      signInAnonymously, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged, 
+      updateProfile,
+      linkWithCredential,
+      EmailAuthProvider
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      initializeFirestore, 
+      persistentLocalCache, 
+      persistentMultipleTabManager, 
+      collection, 
+      doc, 
+      setDoc, 
+      getDoc, 
+      getDocs, 
+      addDoc, 
+      updateDoc, 
+      deleteDoc, 
+      onSnapshot, 
+      query, 
+      where, 
+      orderBy,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // 🔧 管理者・開発者用 Firebase設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyCm9KAOrI3mgdDbdID65e99fV3VpYXGols",
+      authDomain: "keikakutedasukekunn.firebaseapp.com",
+      projectId: "keikakutedasukekunn",
+      storageBucket: "keikakutedasukekunn.firebasestorage.app",
+      messagingSenderId: "807699285093",
+      appId: "1:807699285093:web:360f4be96c43713948b28c",
+      measurementId: "G-SWG2M091VX"
     };
 
-    function openAdmin() { switchTab('adminTab', null); }
-
-    // --- 💾 データ保存・読み込み処理 ---
-    function saveDataToStorage() {
-      localStorage.setItem('kimetarou_schedules', JSON.stringify(scheduleData));
-      localStorage.setItem('kimetarou_roulette', JSON.stringify(rouletteOptions));
-      localStorage.setItem('kimetarou_reviews', JSON.stringify(reviewData));
+    // Firebase 初期化
+    let app, auth, db;
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      });
+    } catch(err) {
+      console.warn("Firebase Init fallback:", err);
     }
 
-    function loadDataFromStorage() {
-      const savedSchedules = localStorage.getItem('kimetarou_schedules');
-      if (savedSchedules) scheduleData = JSON.parse(savedSchedules);
+    // --- GLOBAL STATE ---
+    window.state = {
+      currentUser: null,
+      isAdmin: false,
+      currentGroup: { id: "PERSONAL", name: "マイ個人カレンダー", code: "PERSONAL" },
+      myGroups: [{ id: "PERSONAL", name: "マイ個人カレンダー", code: "PERSONAL" }],
+      currentMonthDate: new Date(),
+      selectedDateStr: null,
+      schedules: [],
+      reviews: [],
+      activeRating: 5,
+      activeFormStatus: 'ok',
+      adminEmails: ["admin@keikaku.app", "admin@example.com", "photo_5vdwwzg@gmail.com"],
+      rouletteOptions: [
+        { id: 1, name: "カラオケ", weight: 25, color: "#dd2e44" },
+        { id: 2, name: "ボウリング", weight: 25, color: "#55acee" },
+        { id: 3, name: "カフェ", weight: 25, color: "#78b159" },
+        { id: 4, name: "映画", weight: 25, color: "#fdcb58" }
+      ]
+    };
 
-      const savedRoulette = localStorage.getItem('kimetarou_roulette');
-      if (savedRoulette) rouletteOptions = JSON.parse(savedRoulette);
-
-      const savedReviews = localStorage.getItem('kimetarou_reviews');
-      if (savedReviews) reviewData = JSON.parse(savedReviews);
+    // 🔒 個人カレンダー完全分離用の効果的グループID算出関数
+    function getEffectiveGroupId() {
+      const currentG = window.state.currentGroup;
+      if (!currentG || currentG.id === "PERSONAL" || currentG.code === "PERSONAL") {
+        let userUid = window.state.currentUser ? window.state.currentUser.uid : localStorage.getItem("keikaku_local_uid");
+        if (!userUid) {
+          userUid = "guest_" + Math.random().toString(36).substring(2, 9);
+          localStorage.setItem("keikaku_local_uid", userUid);
+        }
+        return "PERSONAL_" + userUid;
+      }
+      return currentG.id;
     }
 
+    // 🗑️ ローカルで作成した予定のトラッキング (匿名ユーザー削除保障)
+    function trackMyCreatedSchedule(id) {
+      const myIds = JSON.parse(localStorage.getItem("my_created_schedule_ids") || "[]");
+      const strId = String(id);
+      if (!myIds.includes(strId)) {
+        myIds.push(strId);
+        localStorage.setItem("my_created_schedule_ids", JSON.stringify(myIds));
+      }
+    }
 
-    // --- 2. Googleカレンダー風 月間カレンダー処理 ---
-    let currentDate = new Date();
-    let selectedFullDate = null;
-    let scheduleData = [];
+    // 🗑️ 削除権限判定関数 (匿名ゲストでも自身が作成した予定を確実に削除可能に)
+    function canDeleteSchedule(s) {
+      if (window.state.isAdmin) return true;
+      const myIds = JSON.parse(localStorage.getItem("my_created_schedule_ids") || "[]");
+      if (myIds.includes(String(s.id))) return true;
+      if (window.state.currentUser) {
+        if (s.userId && s.userId === window.state.currentUser.uid) return true;
+        if (window.state.currentUser.isAnonymous && (s.userId === 'anon' || !s.userId)) return true;
+      }
+      return false;
+    }
 
+    // --- PWA & ONLINE/OFFLINE LISTENERS ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg fail:', err));
+      });
+    }
+
+    function updateOnlineStatus() {
+      const badge = document.getElementById('onlineBadge');
+      if (navigator.onLine) {
+        badge.className = 'status-badge online';
+        badge.innerText = '🟢 オンライン';
+      } else {
+        badge.className = 'status-badge offline';
+        badge.innerText = '🟡 オフライン';
+      }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // --- 🔑 AUTHENTICATION HANDLERS ---
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        window.state.currentUser = user;
+        localStorage.setItem("keikaku_local_uid", user.uid);
+
+        let displayName = user.displayName;
+        const userEmail = (user.email || '').toLowerCase();
+        let isAdminAccount = window.state.adminEmails.includes(userEmail);
+
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const uData = userDoc.data();
+            if (uData.name) displayName = uData.name;
+            if (uData.role === 'admin') isAdminAccount = true;
+          }
+        } catch(e){}
+
+        if (!displayName) {
+          displayName = user.isAnonymous ? `ゲスト (${user.uid.slice(0,4)})` : user.email;
+        }
+
+        document.getElementById('userName').innerText = displayName;
+        document.getElementById('userAvatar').innerText = user.isAnonymous ? '👤' : '📧';
+
+        window.state.isAdmin = isAdminAccount;
+        const navAdmin = document.getElementById('navAdmin');
+        if (isAdminAccount) {
+          navAdmin.style.display = 'flex';
+          document.getElementById('adminUserEmailDisplay').innerText = user.email || user.uid;
+          showToast('👑 管理者権限でログインしました');
+        } else {
+          navAdmin.style.display = 'none';
+        }
+
+        document.getElementById('loggedInUserActions').style.display = user.isAnonymous ? 'none' : 'block';
+      } else {
+        try {
+          await signInAnonymously(auth);
+          showToast('👤 ゲストとして自動ログインしました');
+        } catch(err) {
+          console.warn("Auto guest auth fallback:", err);
+        }
+      }
+      
+      checkUrlSharedGroupCode();
+      listenToSchedules();
+      listenToReviews();
+      listenToNotice();
+    });
+
+    // 📦 ゲストデータの移行（データ引き継ぎ）関数
+    async function migrateGuestData(oldUid, newUid) {
+      if (!oldUid || !newUid || oldUid === newUid) return;
+      const oldGroupId = "PERSONAL_" + oldUid;
+      const newGroupId = "PERSONAL_" + newUid;
+
+      try {
+        const q = query(collection(db, "schedules"), where("groupId", "==", oldGroupId));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const batch = writeBatch(db);
+          snap.forEach(docSnap => {
+            batch.update(docSnap.ref, {
+              groupId: newGroupId,
+              userId: newUid
+            });
+          });
+          await batch.commit();
+          console.log(`[DataMigration] Migrated ${snap.size} schedule items from ${oldGroupId} to ${newGroupId}`);
+        }
+      } catch (err) {
+        console.warn("[DataMigration] Data migration failed:", err);
+      }
+    }
+
+    window.handleEmailRegister = async () => {
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPassword').value;
+      const btn = document.getElementById('btnRegisterEmail');
+
+      if (!email || pass.length < 6) {
+        alert('メールアドレスと6文字以上のパスワードを入力してください。');
+        return;
+      }
+
+      // 連打防止
+      if (btn && btn.disabled) return;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ 登録処理中...';
+      }
+
+      const currentUser = auth.currentUser;
+      const oldUid = currentUser ? currentUser.uid : localStorage.getItem("keikaku_local_uid");
+
+      try {
+        let user = null;
+        // ゲスト（匿名アカウント）の場合は linkWithCredential を使用してUID・データを完全に継続
+        if (currentUser && currentUser.isAnonymous) {
+          try {
+            const credential = EmailAuthProvider.credential(email, pass);
+            const res = await linkWithCredential(currentUser, credential);
+            user = res.user;
+          } catch (linkErr) {
+            console.warn("Link with credential failed, fallbacking to create user:", linkErr);
+            if (linkErr.code === 'auth/email-already-in-use') {
+              alert('このメールアドレスは既に登録されています。ログイン画面からログインしてください。');
+              return;
+            }
+          }
+        }
+
+        // リンクが使用できない・失敗した場合は新規作成
+        if (!user) {
+          const res = await createUserWithEmailAndPassword(auth, email, pass);
+          user = res.user;
+          // 新しいUIDになった場合は旧ゲストのデータを移行
+          if (oldUid && oldUid !== user.uid) {
+            await migrateGuestData(oldUid, user.uid);
+          }
+        }
+
+        if (name) {
+          await updateProfile(user, { displayName: name });
+        }
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          name: name || email,
+          email: email,
+          role: 'user',
+          createdAt: new Date()
+        });
+
+        // 右上の表示名をニックネーム（指定がなければメール）に即時更新
+        document.getElementById('userName').innerText = name || email;
+        document.getElementById('userAvatar').innerText = '📧';
+
+        showToast('🎉 データを引き継ぎ、新規アカウント登録が完了しました！');
+        closeAuthModal();
+      } catch(err) {
+        alert('登録エラー: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = '✨ 新規アカウント登録';
+        }
+      }
+    };
+
+    window.handleEmailLogin = async () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('btnLoginEmail');
+
+      if (!email || !pass) {
+        alert('メールアドレスとパスワードを入力してください。');
+        return;
+      }
+
+      // 連打防止
+      if (btn && btn.disabled) return;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ ログイン中...';
+      }
+
+      const currentUser = auth.currentUser;
+      const oldUid = currentUser ? currentUser.uid : localStorage.getItem("keikaku_local_uid");
+
+      try {
+        const res = await signInWithEmailAndPassword(auth, email, pass);
+        // ログインによってゲストから既存アカウントのUIDへ変更された場合、ゲストの予定データを引き継ぎ移行
+        if (oldUid && oldUid !== res.user.uid) {
+          await migrateGuestData(oldUid, res.user.uid);
+        }
+
+        // Firestore からニックネームを取得して右上に即時反映
+        try {
+          const uDoc = await getDoc(doc(db, "users", res.user.uid));
+          if (uDoc.exists() && uDoc.data().name) {
+            document.getElementById('userName').innerText = uDoc.data().name;
+          }
+        } catch(e){}
+
+        showToast('🔑 データを引き継ぎログインしました！');
+        closeAuthModal();
+      } catch(err) {
+        alert('ログインエラー: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = '🔑 ログイン';
+        }
+      }
+    };
+
+    window.handleSignOut = async () => {
+      await signOut(auth);
+      showToast('🚪 ログアウトしました（ゲスト画面に戻ります）');
+      closeAuthModal();
+    };
+
+    // --- 🔗 共有可能URL自動判定 ---
+    async function checkUrlSharedGroupCode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sharedCode = (urlParams.get('code') || urlParams.get('group') || '').trim().toUpperCase();
+
+      if (sharedCode) {
+        await joinGroupByCode(sharedCode, true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
+    window.copyShareableUrl = () => {
+      const code = window.state.currentGroup.code;
+      if (!code || code === 'PERSONAL') return;
+
+      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${code}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast(`🔗 共有URL「${shareUrl}」をコピーしました！`);
+      }).catch(() => {
+        prompt('以下のURLをコピーして相手に共有してください:', shareUrl);
+      });
+    };
+
+    window.copyGroupCode = () => {
+      const code = window.state.currentGroup.code;
+      if (!code || code === 'PERSONAL') return;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast(`📋 コード「${code}」をコピーしました！`);
+      });
+    };
+
+    // --- 👥 GROUP MANAGEMENT ---
+    window.openGroupModal = () => document.getElementById('groupModal').classList.add('open');
+    window.closeGroupModal = () => document.getElementById('groupModal').classList.remove('open');
+
+    window.createNewGroup = async () => {
+      const groupName = document.getElementById('newGroupNameInput').value.trim();
+      if (!groupName) return alert('グループ名を入力してください');
+
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const newGroup = {
+        name: groupName,
+        code: code,
+        createdBy: window.state.currentUser ? window.state.currentUser.uid : 'anon',
+        createdAt: new Date()
+      };
+
+      try {
+        const docRef = await addDoc(collection(db, "groups"), newGroup);
+        const groupObj = { id: docRef.id, ...newGroup };
+        window.state.myGroups.push(groupObj);
+        switchGroup(groupObj);
+        document.getElementById('newGroupNameInput').value = '';
+        showToast(`🎉 グループ「${groupName}」を作成しました！`);
+        closeGroupModal();
+      } catch(e) {
+        const groupObj = { id: 'G_' + Date.now(), name: groupName, code: code };
+        window.state.myGroups.push(groupObj);
+        switchGroup(groupObj);
+        closeGroupModal();
+      }
+    };
+
+    window.joinGroup = async () => {
+      const code = document.getElementById('joinGroupCodeInput').value.trim().toUpperCase();
+      if (!code) return alert('グループコードを入力してください');
+      await joinGroupByCode(code, false);
+    };
+
+    async function joinGroupByCode(code, isFromUrl = false) {
+      try {
+        const q = query(collection(db, "groups"), where("code", "==", code));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const gDoc = snap.docs[0];
+          const groupObj = { id: gDoc.id, ...gDoc.data() };
+          if (!window.state.myGroups.some(g => g.id === groupObj.id)) {
+            window.state.myGroups.push(groupObj);
+          }
+          switchGroup(groupObj);
+          showToast(isFromUrl ? `🔗 共有リンクから「${groupObj.name}」に参加しました！` : `👥 グループ「${groupObj.name}」に参加しました！`);
+          closeGroupModal();
+        } else {
+          if (!isFromUrl) alert('指定されたグループコードが見つかりません');
+        }
+      } catch(e) {
+        console.warn("Group join fallback:", e);
+      }
+    }
+
+    function switchGroup(groupObj) {
+      window.state.currentGroup = groupObj;
+      document.getElementById('currentGroupName').innerText = groupObj.name;
+
+      const codeWrapper = document.getElementById('groupCodeWrapper');
+      const btnCopy = document.getElementById('btnCopyCode');
+      const btnShare = document.getElementById('btnShareLink');
+
+      if (groupObj.id === 'PERSONAL' || groupObj.code === 'PERSONAL') {
+        codeWrapper.style.display = 'none';
+        btnCopy.style.display = 'none';
+        btnShare.style.display = 'none';
+      } else {
+        document.getElementById('currentGroupCode').innerText = groupObj.code;
+        codeWrapper.style.display = 'block';
+        btnCopy.style.display = 'inline-flex';
+        btnShare.style.display = 'inline-flex';
+      }
+
+      renderMyGroupsList();
+      listenToSchedules();
+    }
+
+    function renderMyGroupsList() {
+      const container = document.getElementById('myGroupsList');
+      container.innerHTML = window.state.myGroups.map(g => {
+        const codeText = g.code === 'PERSONAL' ? '' : `[${g.code}]`;
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color);">
+            <div>
+              <strong>${g.name}</strong>
+              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">${codeText}</span>
+            </div>
+            <button class="pill-btn ${window.state.currentGroup.id === g.id ? 'active' : ''}" onclick="switchGroupById('${g.id}')">
+              ${window.state.currentGroup.id === g.id ? '選択中' : '切り替え'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.switchGroupById = (id) => {
+      const g = window.state.myGroups.find(item => item.id === id);
+      if (g) switchGroup(g);
+    };
+
+    // --- REALTIME FIRESTORE LISTENERS ---
+    let scheduleUnsub = null;
+    function listenToSchedules() {
+      if (scheduleUnsub) scheduleUnsub();
+
+      // 🔐 個人カレンダーの場合はユーザー独自の PERSONAL_{uid} でフィルタリング
+      const effectiveGroupId = getEffectiveGroupId();
+      const q = query(collection(db, "schedules"), where("groupId", "==", effectiveGroupId));
+
+      scheduleUnsub = onSnapshot(q, (snap) => {
+        const list = [];
+        snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+        window.state.schedules = list;
+        renderCalendar();
+        renderSchedulesList();
+        if (window.state.selectedDateStr) {
+          updateDayDetailPanel(window.state.selectedDateStr);
+        }
+        updateAdminStats();
+      }, (err) => {
+        console.warn("Firestore schedule snapshot fallback:", err);
+      });
+    }
+
+    let reviewUnsub = null;
+    function listenToReviews() {
+      if (reviewUnsub) reviewUnsub();
+
+      const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+      reviewUnsub = onSnapshot(q, (snap) => {
+        const list = [];
+        snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+        window.state.reviews = list;
+        renderReviews('all');
+        updateAdminStats();
+      }, (err) => {
+        console.warn("Firestore review snapshot fallback:", err);
+      });
+    }
+
+    function listenToNotice() {
+      onSnapshot(doc(db, "settings", "globalNotice"), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().message) {
+          const banner = document.getElementById('announcementBanner');
+          banner.innerText = '📢 ' + docSnap.data().message;
+          banner.style.display = 'block';
+        }
+      }, () => {});
+    }
+
+    // --- CALENDAR & SCHEDULE RENDERING ---
     function renderCalendar() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
+      const year = window.state.currentMonthDate.getFullYear();
+      const month = window.state.currentMonthDate.getMonth();
 
-      document.getElementById('currentMonthTitle').innerText = `${year}年 ${month + 1}月`;
+      document.getElementById('calendarMonthTitle').innerText = `${year}年 ${month + 1}月`;
 
       const firstDay = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
 
-      const daysContainer = document.getElementById('calendarDays');
-      daysContainer.innerHTML = '';
+      const grid = document.getElementById('calendarDaysGrid');
+      grid.innerHTML = '';
 
       for (let i = 0; i < firstDay; i++) {
-        daysContainer.innerHTML += `<div class="day-cell empty"></div>`;
+        grid.innerHTML += `<div class="day-cell empty"></div>`;
       }
 
-      for (let date = 1; date <= lastDate; date++) {
-        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-        const isSelected = selectedFullDate === dateString ? 'selected' : '';
+      const todayStr = new Date().toISOString().split('T')[0];
 
-        const daySchedules = scheduleData.filter(item => item.date === dateString);
+      for (let date = 1; date <= lastDate; date++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+        const isSelected = window.state.selectedDateStr === dateStr ? 'selected' : '';
+        const isToday = todayStr === dateStr ? 'today' : '';
+
+        const daySchedules = window.state.schedules.filter(s => s.date === dateStr);
         let dotsHtml = '';
         if (daySchedules.length > 0) {
-          dotsHtml = '<div class="status-dots">';
+          dotsHtml = '<div class="matrix-dots">';
           daySchedules.forEach(sched => {
-            const dotClass = sched.status === 'ok' ? 'ok' : 'ng';
-            dotsHtml += `<div class="dot ${dotClass}"></div>`;
+            dotsHtml += `<div class="dot-badge ${sched.status}"></div>`;
           });
           dotsHtml += '</div>';
         }
 
-        daysContainer.innerHTML += `
-          <div class="day-cell ${isSelected}" onclick="selectDate('${dateString}', this)">
+        grid.innerHTML += `
+          <div class="day-cell ${isSelected} ${isToday}" onclick="selectCalendarDate('${dateStr}')">
             <span>${date}</span>
             ${dotsHtml}
           </div>
@@ -598,229 +1628,320 @@
       }
     }
 
-    function changeMonth(delta) {
-      currentDate.setMonth(currentDate.getMonth() + delta);
+    window.changeMonth = (delta) => {
+      window.state.currentMonthDate.setMonth(window.state.currentMonthDate.getMonth() + delta);
       renderCalendar();
-    }
+    };
 
-    function selectDate(dateStr, element) {
-      selectedFullDate = dateStr;
+    window.selectCalendarDate = (dateStr) => {
+      window.state.selectedDateStr = dateStr;
+      renderCalendar();
+      updateDayDetailPanel(dateStr);
+    };
 
-      document.querySelectorAll('.day-cell').forEach(cell => cell.classList.remove('selected'));
-      element.classList.add('selected');
+    function updateDayDetailPanel(dateStr) {
+      const panel = document.getElementById('scheduleDetailPanel');
+      panel.style.display = 'block';
+      document.getElementById('selectedDateTitle').innerText = `📅 選択中の日付: ${dateStr}`;
 
-      document.getElementById('selectedDateTitle').innerText = `📅 選択中: ${dateStr}`;
-      updateExistingNotes();
-      document.getElementById('timeSelectorPanel').style.display = 'block';
-    }
-
-    function updateExistingNotes() {
-      const daySchedules = scheduleData.filter(item => item.date === selectedFullDate);
-      const notesList = document.getElementById('existingNotesList');
+      const daySchedules = window.state.schedules.filter(s => s.date === dateStr);
+      const listContainer = document.getElementById('memberStatusList');
+      const tag = document.getElementById('overallStatusTag');
 
       if (daySchedules.length === 0) {
-        notesList.innerHTML = '<span style="color:#9ca3af;">（まだ登録された予定はありません）</span>';
-      } else {
-        notesList.innerHTML = daySchedules.map(item => {
-          const badge = item.status === 'ok' ? '🟢 空き' : '🔴 予定あり';
-          const reasonText = item.reason ? `【${item.reason}】` : '';
-          return `
-            <div class="existing-note-item">
-              <span>${badge}</span>
-              <span>⏰ ${item.time}</span>
-              <strong style="color:#1e293b;">${reasonText}</strong>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    let currentStatus = 'ok';
-
-    function setStatus(status) {
-      currentStatus = status;
-      const btnOk = document.getElementById('btnOk');
-      const btnNg = document.getElementById('btnNg');
-
-      if (status === 'ok') {
-        btnOk.classList.add('active');
-        btnNg.classList.remove('active');
-      } else {
-        btnNg.classList.add('active');
-        btnOk.classList.remove('active');
-      }
-    }
-
-    function addSchedule() {
-      const start = document.getElementById('startTime').value;
-      const end = document.getElementById('endTime').value;
-      const reason = document.getElementById('reasonInput').value.trim();
-
-      if (!selectedFullDate || !start || !end) {
-        alert('日付と時間を正しく選択してください');
+        tag.className = 'summary-tag no-data';
+        tag.innerText = '未登録';
+        listContainer.innerHTML = '<span style="color:var(--text-muted); font-size:12px;">（まだメンバーの予定が登録されていません）</span>';
         return;
       }
 
-      const newItem = {
-        id: Date.now(),
-        date: selectedFullDate,
-        time: `${start} 〜 ${end}`,
-        reason: reason,
-        status: currentStatus
-      };
-      scheduleData.push(newItem);
-      saveDataToStorage();
+      const hasNg = daySchedules.some(s => s.status === 'ng');
+      const hasMaybe = daySchedules.some(s => s.status === 'maybe');
 
-      document.getElementById('reasonInput').value = '';
-
-      renderCalendar();
-      updateExistingNotes();
-      renderSchedules();
-    }
-
-    function deleteSchedule(id) {
-      scheduleData = scheduleData.filter(item => item.id !== id);
-      saveDataToStorage();
-      renderCalendar();
-      if (selectedFullDate) updateExistingNotes();
-      renderSchedules();
-    }
-
-    function renderSchedules() {
-      const listContainer = document.getElementById('scheduleList');
-      if (scheduleData.length === 0) {
-        listContainer.innerHTML = '<p style="color: #9ca3af; font-size: 13px;">まだ時間帯が追加されていません。</p>';
-        return;
+      if (!hasNg && !hasMaybe) {
+        tag.className = 'summary-tag all-ok';
+        tag.innerText = '🎉 全員参加OK！';
+      } else if (hasNg) {
+        tag.className = 'summary-tag has-ng';
+        tag.innerText = '⚠️ 参加不可(NG)あり';
+      } else {
+        tag.className = 'summary-tag';
+        tag.style.background = '#fef3c7';
+        tag.style.color = '#92400e';
+        tag.innerText = '🔺 要相談あり';
       }
 
-      listContainer.innerHTML = scheduleData.map(item => {
-        const isOk = item.status === 'ok';
-        const bgClass = isOk ? 'status-ok' : 'status-ng';
-        const badge = isOk ? '🟢 予定なし（空き）' : '🔴 予定あり（NG）';
+      listContainer.innerHTML = daySchedules.map(s => {
+        let badgeIcon = '🟢 参加OK';
+        let statusClass = 'status-ok';
+        if (s.status === 'maybe') { badgeIcon = '🔺 要相談'; statusClass = 'status-maybe'; }
+        if (s.status === 'ng') { badgeIcon = '🔴 参加不可(NG)'; statusClass = 'status-ng'; }
+
+        const reasonText = s.reason ? `「${s.reason}」` : '';
+        const userLabel = s.userName || 'メンバー';
 
         return `
-          <div class="schedule-item ${bgClass}">
+          <div class="member-status-item ${statusClass}">
             <div>
-              <div style="font-size: 11px; opacity: 0.8;">${item.date}</div>
-              <div>⏰ ${item.time} (${badge})</div>
-              ${item.reason ? `<div style="font-size: 12px; margin-top:2px;">💬 理由: <strong>${item.reason}</strong></div>` : ''}
+              <strong>${userLabel}</strong>: <span>${badgeIcon}</span>
+              <div style="font-size:11px; opacity:0.8; margin-top:2px;">⏰ ${s.time} ${reasonText}</div>
             </div>
-            <button class="delete-btn" onclick="deleteSchedule(${item.id})">🗑️ 取消</button>
+            ${canDeleteSchedule(s) ? `<button class="btn-danger" style="font-size:10px; padding:3px 6px;" onclick="deleteScheduleEntry('${s.id}')">削除</button>` : ''}
           </div>
         `;
       }).join('');
     }
 
-    // --- 3. 🎰 行き先ルーレット処理 ---
-    const availableColors = [
-      { name: "🔴 赤", value: "#dd2e44" },
-      { name: "🟠 オレンジ", value: "#f58220" },
-      { name: "🟡 黄", value: "#fdcb58" },
-      { name: "🟢 緑", value: "#78b159" },
-      { name: "🔵 青", value: "#55acee" },
-      { name: "🟣 紫", value: "#aa8ed6" },
-      { name: "🟤 茶", value: "#c1694f" },
-      { name: "⬛ 黒", value: "#31373d" },
-      { name: "⚪ 白", value: "#e6e7e8" }
-    ];
+    window.setFormStatus = (status) => {
+      window.state.activeFormStatus = status;
+      document.getElementById('btnStatusOk').className = `status-toggle-btn ok ${status==='ok'?'active':''}`;
+      document.getElementById('btnStatusMaybe').className = `status-toggle-btn maybe ${status==='maybe'?'active':''}`;
+      document.getElementById('btnStatusNg').className = `status-toggle-btn ng ${status==='ng'?'active':''}`;
+    };
 
-    let rouletteOptions = [
-      { id: 1, name: "カラオケ", weight: 25, color: "#dd2e44" },
-      { id: 2, name: "ボウリング", weight: 25, color: "#55acee" },
-      { id: 3, name: "カフェ", weight: 25, color: "#78b159" },
-      { id: 4, name: "映画", weight: 25, color: "#fdcb58" }
-    ];
-    let currentRotation = 0;
-    let isSpinning = false;
+    window.saveScheduleEntry = async () => {
+      const dateStr = window.state.selectedDateStr;
+      if (!dateStr) return alert('日付をカレンダーから選択してください');
 
-    function renderOptions() {
-      const container = document.getElementById('optionsList');
-      container.innerHTML = rouletteOptions.map((opt) => `
-        <div class="option-row">
-          <select class="color-select" onchange="updateOptionColor(${opt.id}, this.value)">
-            ${availableColors.map(c => `
-              <option value="${c.value}" ${opt.color === c.value ? 'selected' : ''}>${c.name}</option>
-            `).join('')}
-          </select>
-          <input type="text" class="input-style" value="${opt.name}" onchange="updateOptionName(${opt.id}, this.value)">
-          <input type="number" class="input-style prob-input" value="${opt.weight}" min="1" onchange="updateOptionWeight(${opt.id}, this.value)">
-          <span style="font-size: 12px; font-weight: bold;">%</span>
-          <button class="delete-btn" onclick="deleteOption(${opt.id})">✕</button>
+      const start = document.getElementById('startTimeInput').value;
+      const end = document.getElementById('endTimeInput').value;
+      const reason = document.getElementById('reasonInput').value.trim();
+      const user = window.state.currentUser;
+
+      const userName = user ? (user.displayName || (user.isAnonymous ? 'ゲスト' : user.email)) : '匿名ユーザー';
+      const userId = user ? user.uid : (localStorage.getItem("keikaku_local_uid") || "anon");
+
+      const entry = {
+        groupId: getEffectiveGroupId(),
+        date: dateStr,
+        time: `${start} 〜 ${end}`,
+        status: window.state.activeFormStatus,
+        reason: reason,
+        userId: userId,
+        userName: userName,
+        createdAt: new Date()
+      };
+
+      try {
+        const docRef = await addDoc(collection(db, "schedules"), entry);
+        trackMyCreatedSchedule(docRef.id);
+        document.getElementById('reasonInput').value = '';
+        showToast('✨ 予定を保存しました！');
+      } catch(e) {
+        const localId = 'S_' + Date.now();
+        trackMyCreatedSchedule(localId);
+        window.state.schedules.push({ id: localId, ...entry });
+        renderCalendar();
+        updateDayDetailPanel(dateStr);
+        renderSchedulesList();
+        showToast('✨ 予定をローカル保存しました');
+      }
+    };
+
+    window.deleteScheduleEntry = async (id) => {
+      const strId = String(id);
+      // ローカル表示の即時反映
+      window.state.schedules = window.state.schedules.filter(s => String(s.id) !== strId);
+      renderCalendar();
+      if (window.state.selectedDateStr) updateDayDetailPanel(window.state.selectedDateStr);
+      renderSchedulesList();
+
+      // localStorageの記録も削除
+      let myIds = JSON.parse(localStorage.getItem("my_created_schedule_ids") || "[]");
+      myIds = myIds.filter(i => i !== strId);
+      localStorage.setItem("my_created_schedule_ids", JSON.stringify(myIds));
+
+      try {
+        await deleteDoc(doc(db, "schedules", strId));
+        showToast('🗑️ 予定を削除しました');
+      } catch(e) {
+        console.warn("Firestore delete fallback:", e);
+        showToast('🗑️ 予定を削除しました');
+      }
+    };
+
+    function renderSchedulesList() {
+      const container = document.getElementById('allSchedulesList');
+      if (window.state.schedules.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size:13px;">まだ日程が登録されていません。</p>';
+        return;
+      }
+
+      container.innerHTML = window.state.schedules.map(s => {
+        let badgeIcon = '🟢 空き';
+        if (s.status === 'maybe') badgeIcon = '🔺 要相談';
+        if (s.status === 'ng') badgeIcon = '🔴 NG';
+
+        return `
+          <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:700;">${s.date} ${s.time}</div>
+              <div style="font-weight:700; font-size:14px; margin-top:2px;">${s.userName}: ${badgeIcon} ${s.reason ? `(理由: ${s.reason})` : ''}</div>
+            </div>
+            ${canDeleteSchedule(s) ? `<button class="btn-danger" onclick="deleteScheduleEntry('${s.id}')">削除</button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- REVIEWS & FEEDBACK SYSTEM ---
+    window.setRating = (r) => {
+      window.state.activeRating = r;
+      const stars = document.querySelectorAll('#starRatingBox span');
+      stars.forEach((star, idx) => {
+        star.className = idx < r ? 'active' : '';
+      });
+    };
+
+    window.submitReview = async () => {
+      const author = document.getElementById('reviewAuthorInput').value.trim() || '名無しさん';
+      const comment = document.getElementById('reviewCommentInput').value.trim();
+
+      if (!comment) return alert('コメントを入力してください');
+
+      const reviewDoc = {
+        author: author,
+        rating: window.state.activeRating,
+        comment: comment,
+        userId: window.state.currentUser ? window.state.currentUser.uid : 'anon',
+        createdAt: new Date()
+      };
+
+      try {
+        await addDoc(collection(db, "reviews"), reviewDoc);
+        document.getElementById('reviewAuthorInput').value = '';
+        document.getElementById('reviewCommentInput').value = '';
+        setRating(5);
+        showToast('🎉 レビューを送信しました！ありがとうございます！');
+      } catch(e) {
+        window.state.reviews.unshift({ id: 'R_' + Date.now(), ...reviewDoc, createdAt: new Date() });
+        renderReviews('all');
+        showToast('🎉 レビューを送信しました！');
+      }
+    };
+
+    window.filterReviews = (star, btn) => {
+      if (btn) {
+        document.querySelectorAll('.filter-pills .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      renderReviews(star);
+    };
+
+    function renderReviews(starFilter) {
+      const container = document.getElementById('reviewsContainer');
+      let filtered = window.state.reviews;
+
+      if (starFilter !== 'all') {
+        filtered = filtered.filter(r => r.rating === Number(starFilter));
+      }
+
+      if (window.state.reviews.length > 0) {
+        const avg = (window.state.reviews.reduce((sum, r) => sum + r.rating, 0) / window.state.reviews.length).toFixed(1);
+        document.getElementById('averageRatingBadge').innerText = `★ ${avg} (${window.state.reviews.length}件)`;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">該当するレビューはありません。</p>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(r => {
+        const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+        const dateStr = r.createdAt ? new Date(r.createdAt.seconds ? r.createdAt.seconds*1000 : r.createdAt).toLocaleDateString('ja-JP') : '最近';
+
+        return `
+          <div class="review-card-item">
+            <div class="review-meta">
+              <span class="review-author">${r.author} 様</span>
+              <span class="review-date">${dateStr}</span>
+            </div>
+            <div style="color:var(--warning); font-size:14px; margin-bottom:6px;">${stars}</div>
+            <div style="font-size:13px; color:var(--text-main); white-space:pre-wrap;">${r.comment}</div>
+            ${(window.state.currentUser && (window.state.currentUser.uid === r.userId || window.state.isAdmin)) ? `
+              <div style="text-align:right; margin-top:8px;">
+                <button class="btn-danger" style="font-size:10px; padding:3px 8px;" onclick="deleteReviewEntry('${r.id}')">削除</button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.deleteReviewEntry = async (id) => {
+      try {
+        await deleteDoc(doc(db, "reviews", id));
+        showToast('🗑️ レビューを削除しました');
+      } catch(e) {
+        window.state.reviews = window.state.reviews.filter(r => r.id !== id);
+        renderReviews('all');
+      }
+    };
+
+    // --- ADMIN PANEL FUNCTIONALITY ---
+    function updateAdminStats() {
+      if (!window.state.isAdmin) return;
+      document.getElementById('adminTotalSchedules').innerText = window.state.schedules.length + ' 件';
+      document.getElementById('adminTotalReviews').innerText = window.state.reviews.length + ' 件';
+
+      const revContainer = document.getElementById('adminReviewsList');
+      revContainer.innerHTML = window.state.reviews.map(r => `
+        <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>${r.author}</strong> (★${r.rating}): ${r.comment}
+          </div>
+          <button class="btn-danger" onclick="deleteReviewEntry('${r.id}')">削除</button>
+        </div>
+      `).join('');
+
+      const schedContainer = document.getElementById('adminSchedulesList');
+      schedContainer.innerHTML = window.state.schedules.map(s => `
+        <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>[${s.date}] ${s.userName}</strong>: ${s.status.toUpperCase()} (${s.reason||'理由なし'})
+          </div>
+          <button class="btn-danger" onclick="deleteScheduleEntry('${s.id}')">削除</button>
         </div>
       `).join('');
     }
 
-    function addOption() {
-      if (rouletteOptions.length >= 9) {
-        alert('候補は最大9個までです');
-        return;
+    window.switchAdminSubTab = (tab, btn) => {
+      document.querySelectorAll('#tabAdmin .pill-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      document.getElementById('adminSubOverview').style.display = tab === 'overview' ? 'block' : 'none';
+      document.getElementById('adminSubReviews').style.display = tab === 'reviews' ? 'block' : 'none';
+      document.getElementById('adminSubSchedules').style.display = tab === 'schedules' ? 'block' : 'none';
+      document.getElementById('adminSubNotice').style.display = tab === 'notice' ? 'block' : 'none';
+    };
+
+    window.saveAdminNotice = async () => {
+      const msg = document.getElementById('adminNoticeInput').value.trim();
+      try {
+        await setDoc(doc(db, "settings", "globalNotice"), { message: msg, updatedAt: new Date() });
+        showToast('📢 アナウンスを更新しました');
+      } catch(e) {
+        showToast('📢 アナウンスをローカル更新しました');
       }
+    };
 
-      const input = document.getElementById('newOptionInput');
-      const name = input.value.trim();
-      if (!name) return;
+    // --- ROULETTE DECISION TOOL ---
+    let currentRouletteRotation = 0;
+    let isRouletteSpinning = false;
 
-      const newId = Date.now();
-      const color = availableColors[rouletteOptions.length % availableColors.length].value;
-      rouletteOptions.push({ id: newId, name: name, weight: 10, color: color });
-      
-      input.value = '';
-      equalizeProbabilities();
-    }
-
-    function deleteOption(id) {
-      if (rouletteOptions.length <= 1) {
-        alert('候補は少なくとも1つ以上必要です');
-        return;
-      }
-      rouletteOptions = rouletteOptions.filter(o => o.id !== id);
-      equalizeProbabilities();
-    }
-
-    function updateOptionName(id, val) {
-      const opt = rouletteOptions.find(o => o.id === id);
-      if (opt) opt.name = val;
-      saveDataToStorage();
-      drawRoulette();
-    }
-
-    function updateOptionWeight(id, val) {
-      const opt = rouletteOptions.find(o => o.id === id);
-      if (opt) opt.weight = Math.max(1, parseFloat(val) || 1);
-      saveDataToStorage();
-      drawRoulette();
-    }
-
-    function updateOptionColor(id, newColor) {
-      const opt = rouletteOptions.find(o => o.id === id);
-      if (opt) opt.color = newColor;
-      saveDataToStorage();
-      drawRoulette();
-    }
-
-    function equalizeProbabilities() {
-      if (rouletteOptions.length === 0) return;
-      const equalWeight = Math.floor(100 / rouletteOptions.length);
-      rouletteOptions.forEach(o => o.weight = equalWeight);
-      saveDataToStorage();
-      renderOptions();
-      drawRoulette();
-    }
-
-    function drawRoulette() {
+    window.drawRoulette = () => {
       const canvas = document.getElementById('rouletteCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const totalWeight = rouletteOptions.reduce((sum, o) => sum + Number(o.weight), 0);
+      const opts = window.state.rouletteOptions;
+      const totalWeight = opts.reduce((sum, o) => sum + Number(o.weight), 0);
 
       ctx.clearRect(0, 0, 300, 300);
-
       if (totalWeight === 0) return;
 
       let startAngle = 0;
-      rouletteOptions.forEach(opt => {
+      opts.forEach(opt => {
         const sliceAngle = (opt.weight / totalWeight) * 2 * Math.PI;
-
         ctx.beginPath();
         ctx.moveTo(150, 150);
         ctx.arc(150, 150, 150, startAngle, startAngle + sliceAngle);
@@ -832,149 +1953,151 @@
         ctx.translate(150, 150);
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = "right";
-
-        if (opt.color === "#e6e7e8") {
-          ctx.fillStyle = "#1f2937";
-          ctx.shadowColor = "rgba(255,255,255,0.8)";
-        } else {
-          ctx.fillStyle = "#ffffff";
-          ctx.shadowColor = "rgba(0,0,0,0.6)";
-        }
-
+        ctx.fillStyle = "#ffffff";
         ctx.font = "bold 14px sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.6)";
         ctx.shadowBlur = 4;
         ctx.fillText(opt.name, 130, 5);
         ctx.restore();
 
         startAngle += sliceAngle;
       });
-    }
+    };
 
-    function spinRoulette() {
-      if (isSpinning || rouletteOptions.length === 0) return;
-      isSpinning = true;
+    window.renderRouletteOptions = () => {
+      const container = document.getElementById('rouletteOptionsList');
+      container.innerHTML = window.state.rouletteOptions.map(opt => `
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+          <input type="text" class="input-control" value="${opt.name}" onchange="updateRouletteName(${opt.id}, this.value)">
+          <input type="number" class="input-control" style="width:70px; text-align:right;" value="${opt.weight}" min="1" onchange="updateRouletteWeight(${opt.id}, this.value)">
+          <span style="font-size:12px; font-weight:700;">%</span>
+          <button class="btn-danger" onclick="deleteRouletteOption(${opt.id})">✕</button>
+        </div>
+      `).join('');
+    };
+
+    window.addRouletteOption = () => {
+      const input = document.getElementById('newRouletteInput');
+      const name = input.value.trim();
+      if (!name) return;
+      const colors = ["#dd2e44", "#f58220", "#fdcb58", "#78b159", "#55acee", "#aa8ed6"];
+      const color = colors[window.state.rouletteOptions.length % colors.length];
+      window.state.rouletteOptions.push({ id: Date.now(), name: name, weight: 25, color: color });
+      input.value = '';
+      equalizeRouletteProbabilities();
+    };
+
+    window.deleteRouletteOption = (id) => {
+      if (window.state.rouletteOptions.length <= 1) return alert('候補は最低1つ必要です');
+      window.state.rouletteOptions = window.state.rouletteOptions.filter(o => o.id !== id);
+      equalizeRouletteProbabilities();
+    };
+
+    window.equalizeRouletteProbabilities = () => {
+      const equal = Math.floor(100 / window.state.rouletteOptions.length);
+      window.state.rouletteOptions.forEach(o => o.weight = equal);
+      renderRouletteOptions();
+      drawRoulette();
+    };
+
+    window.updateRouletteName = (id, val) => {
+      const opt = window.state.rouletteOptions.find(o => o.id === id);
+      if (opt) opt.name = val;
+      drawRoulette();
+    };
+
+    window.updateRouletteWeight = (id, val) => {
+      const opt = window.state.rouletteOptions.find(o => o.id === id);
+      if (opt) opt.weight = Math.max(1, parseFloat(val)||1);
+      drawRoulette();
+    };
+
+    window.spinRoulette = () => {
+      if (isRouletteSpinning || window.state.rouletteOptions.length === 0) return;
+      isRouletteSpinning = true;
 
       const spinBtn = document.getElementById('spinBtn');
-      const resultBox = document.getElementById('resultBox');
+      const resultBox = document.getElementById('rouletteResultBox');
       spinBtn.disabled = true;
       resultBox.style.display = 'none';
 
-      const totalWeight = rouletteOptions.reduce((sum, o) => sum + Number(o.weight), 0);
+      const opts = window.state.rouletteOptions;
+      const totalWeight = opts.reduce((sum, o) => sum + Number(o.weight), 0);
       let rand = Math.random() * totalWeight;
-      let accumulatedWeight = 0;
-      let winningIndex = 0;
+      let accum = 0;
+      let winningIdx = 0;
 
-      for (let i = 0; i < rouletteOptions.length; i++) {
-        accumulatedWeight += Number(rouletteOptions[i].weight);
-        if (rand <= accumulatedWeight) {
-          winningIndex = i;
-          break;
-        }
+      for (let i = 0; i < opts.length; i++) {
+        accum += Number(opts[i].weight);
+        if (rand <= accum) { winningIdx = i; break; }
       }
 
       let startAngle = 0;
-      for (let i = 0; i < winningIndex; i++) {
-        startAngle += (rouletteOptions[i].weight / totalWeight) * 360;
+      for (let i = 0; i < winningIdx; i++) {
+        startAngle += (opts[i].weight / totalWeight) * 360;
       }
-      const sliceDeg = (rouletteOptions[winningIndex].weight / totalWeight) * 360;
-      const targetSectorDeg = startAngle + Math.random() * sliceDeg;
+      const sliceDeg = (opts[winningIdx].weight / totalWeight) * 360;
+      const targetDeg = startAngle + Math.random() * sliceDeg;
 
-      const extraSpin = 360 * 5; 
-      const targetRotation = currentRotation + extraSpin + (360 - (targetSectorDeg % 360)) - (currentRotation % 360) - 90;
+      const extraSpin = 360 * 5;
+      const targetRotation = currentRouletteRotation + extraSpin + (360 - (targetDeg % 360)) - (currentRouletteRotation % 360) - 90;
 
-      currentRotation = targetRotation;
+      currentRouletteRotation = targetRotation;
       const canvas = document.getElementById('rouletteCanvas');
-      canvas.style.transform = `rotate(${currentRotation}deg)`;
+      canvas.style.transform = `rotate(${currentRouletteRotation}deg)`;
 
       setTimeout(() => {
-        isSpinning = false;
+        isRouletteSpinning = false;
         spinBtn.disabled = false;
-        document.getElementById('resultText').innerText = rouletteOptions[winningIndex].name;
+        document.getElementById('rouletteResultText').innerText = opts[winningIdx].name;
         resultBox.style.display = 'block';
       }, 4000);
-    }
+    };
 
-    // --- 4. 💬 レビュー＆管理者機能処理 ---
-    let reviewData = [
-      { id: 1, author: "たろう", rating: 5, comment: "使いやすくて友達との予定合わせが楽になりました！", date: "2026/07/20" }
-    ];
-    let selectedRating = 5;
+    // --- NAVIGATION & MODAL CONTROLS ---
+    window.switchMainTab = (tabId, btn) => {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-    function setRating(rating) {
-      selectedRating = rating;
-      const stars = document.querySelectorAll('#starRating span');
-      stars.forEach((star, idx) => {
-        if (idx < rating) {
-          star.classList.add('active');
-        } else {
-          star.classList.remove('active');
-        }
-      });
-    }
+      document.getElementById(tabId).classList.add('active');
+      if (btn) btn.classList.add('active');
 
-    function submitReview() {
-      const author = document.getElementById('reviewAuthor').value.trim() || "名無しさん";
-      const comment = document.getElementById('reviewComment').value.trim();
-
-      if (!comment) {
-        alert('コメントを入力してください');
-        return;
+      if (tabId === 'tabRoulette') {
+        renderRouletteOptions();
+        drawRoulette();
       }
+    };
 
-      const today = new Date();
-      const dateStr = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
+    window.openAuthModal = () => document.getElementById('authModal').classList.add('open');
+    window.closeAuthModal = () => document.getElementById('authModal').classList.remove('open');
 
-      const newReview = {
-        id: Date.now(),
-        author: author,
-        rating: selectedRating,
-        comment: comment,
-        date: dateStr
-      };
+    window.switchAuthTab = (formType, btn) => {
+      document.querySelectorAll('#authModal .pill-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
 
-      reviewData.unshift(newReview);
-      saveDataToStorage();
+      document.getElementById('authFormLogin').style.display = formType === 'login' ? 'block' : 'none';
+      document.getElementById('authFormRegister').style.display = formType === 'register' ? 'block' : 'none';
+    };
 
-      document.getElementById('reviewAuthor').value = '';
-      document.getElementById('reviewComment').value = '';
-      setRating(5);
-
-      alert('🎉 レビューを送信しました！ありがとうございます！');
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
     }
 
-    function filterReviews(star, btnElement) {
-      if (btnElement) {
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        btnElement.classList.add('active');
-      }
-      renderReviews(star);
-    }
-
-    function renderReviews(starFilter) {
-      const container = document.getElementById('reviewList');
-      let filtered = reviewData;
-
-      if (starFilter !== 'all') {
-        filtered = reviewData.filter(r => r.rating === starFilter);
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = '<p style="color: #6b7280; font-size:13px;">該当するレビューはありません。</p>';
-        return;
-      }
-
-      container.innerHTML = filtered.map(r => `
-        <div class="review-card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="font-size:14px; color:#1e293b;">${r.author} 様</strong>
-            <span style="font-size:12px; color:#9ca3af;">${r.date}</span>
-          </div>
-          <div style="color:#f59e0b; font-size:14px; margin-bottom:6px;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-          <div style="font-size:13px; color:#374151; white-space:pre-wrap;">${r.comment}</div>
-        </div>
-      `).join('');
-    }
+    // UI初期化
+    switchGroup(window.state.currentGroup);
+    renderCalendar();
+    renderRouletteOptions();
+    drawRoulette();
+    updateOnlineStatus();
   </script>
-
 </body>
 </html>
