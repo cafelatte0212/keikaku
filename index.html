@@ -609,6 +609,7 @@
       bottom: 0;
       left: 0;
       right: 0;
+      width: 100%;
       height: 70px;
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(12px);
@@ -617,8 +618,8 @@
       justify-content: space-around;
       align-items: center;
       z-index: 90;
-      max-width: 640px;
-      margin: 0 auto;
+      max-width: none;
+      margin: 0;
     }
 
     .nav-btn {
@@ -714,11 +715,14 @@
           <div id="groupCodeWrapper" style="text-align:right; display:none;">
             <div style="font-size:10px; opacity:0.7;">グループコード</div>
             <div id="currentGroupCode" class="group-code-badge"></div>
+            <div style="font-size:10px; opacity:0.7; margin-top:6px;">参加キー</div>
+            <div id="currentGroupJoinKey" class="group-code-badge"></div>
           </div>
         </div>
         <div class="group-btn-group">
           <button id="btnShareLink" class="btn-glass" style="display:none;" onclick="copyShareableUrl()">🔗 共有リンクをコピー</button>
           <button id="btnCopyCode" class="btn-glass" style="display:none;" onclick="copyGroupCode()">📋 コードをコピー</button>
+          <button id="btnCopyJoinKey" class="btn-glass" style="display:none;" onclick="copyGroupJoinKey()">🔐 参加キーをコピー</button>
           <button class="btn-glass" onclick="openGroupModal()">👥 グループ作成/参加</button>
         </div>
       </div>
@@ -783,6 +787,7 @@
             </div>
 
             <button class="btn-primary" onclick="saveScheduleEntry()">✨ 予定を保存・更新する</button>
+            <button class="pill-btn" style="width:100%; margin-top:10px;" onclick="enableScheduleNotifications()">🔔 予定通知を有効化</button>
           </div>
         </div>
 
@@ -1016,7 +1021,7 @@
         <button id="btnRegisterEmail" class="btn-primary" onclick="handleEmailRegister()">✨ 新規アカウント登録</button>
       </div>
 
-      <div id="loggedInUserActions" style="display:none; margin-top:16px; pt-16 border-top:1px solid var(--border-color);">
+      <div id="loggedInUserActions" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
         <button class="btn-danger" style="width:100%; padding:10px;" onclick="handleSignOut()">🚪 ログアウトしてゲストに戻る</button>
       </div>
 
@@ -1045,6 +1050,9 @@
         <label class="form-label">グループコードを入力して参加</label>
         <div style="display:flex; gap:8px;">
           <input type="text" id="joinGroupCodeInput" class="input-control" placeholder="6桁コード (例: X8K2P9)">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <input type="text" id="joinGroupKeyInput" class="input-control" placeholder="参加キー (例: 8桁)">
           <button class="btn-primary" style="width:auto; white-space:nowrap; background:var(--success);" onclick="joinGroup()">参加</button>
         </div>
       </div>
@@ -1054,6 +1062,18 @@
       <h4 style="font-size:13px; font-weight:800; margin-bottom:10px;">マイグループ一覧</h4>
       <div id="myGroupsList" style="display:flex; flex-direction:column; gap:8px;">
         <!-- 動的表示 -->
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border-color); margin:16px 0;">
+
+      <div id="groupMemberSection">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px;">
+          <h4 style="font-size:13px; font-weight:800;">現在のグループメンバー</h4>
+          <button id="leaveGroupBtn" class="btn-danger" style="display:none;" onclick="leaveCurrentGroup()">退会する</button>
+        </div>
+        <div id="groupMembersList" style="display:flex; flex-direction:column; gap:8px;">
+          <span style="color:var(--text-muted); font-size:12px;">グループを選択してください。</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1087,6 +1107,8 @@
       addDoc, 
       updateDoc, 
       deleteDoc, 
+      arrayUnion,
+      arrayRemove,
       onSnapshot, 
       query, 
       where, 
@@ -1123,19 +1145,149 @@
       isAdmin: false,
       currentGroup: { id: "PERSONAL", name: "マイ個人カレンダー", code: "PERSONAL" },
       myGroups: [{ id: "PERSONAL", name: "マイ個人カレンダー", code: "PERSONAL" }],
+      currentGroupMembers: [],
       currentMonthDate: new Date(),
       selectedDateStr: null,
       schedules: [],
       reviews: [],
       activeRating: 5,
       activeFormStatus: 'ok',
-      adminEmails: ["admin@keikaku.app", "admin@example.com", "photo_5vdwwzg@gmail.com"],
+      adminEmails: [],
       rouletteOptions: [
         { id: 1, name: "カラオケ", weight: 25, color: "#dd2e44" },
         { id: 2, name: "ボウリング", weight: 25, color: "#55acee" },
         { id: 3, name: "カフェ", weight: 25, color: "#78b159" },
         { id: 4, name: "映画", weight: 25, color: "#fdcb58" }
       ]
+    };
+
+    const NOTIFY_CHECK_INTERVAL_MS = 30000;
+    let scheduleNotifyTimer = null;
+
+    function getLocalDateString(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getCurrentUserLabel() {
+      const user = window.state.currentUser;
+      if (!user) return 'ゲスト';
+      return user.displayName || user.email || `ユーザー(${user.uid.slice(0, 6)})`;
+    }
+
+    function getCurrentUserId() {
+      return window.state.currentUser ? window.state.currentUser.uid : null;
+    }
+
+    function normalizeJoinInput(value) {
+      return (value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+
+    function buildInviteId(code, joinKey) {
+      return `${normalizeJoinInput(code)}_${normalizeJoinInput(joinKey)}`;
+    }
+
+    function formatAuthErrorMessage(err, actionLabel) {
+      const code = err && err.code ? err.code : '';
+      const map = {
+        'auth/invalid-credential': 'メールアドレスまたはパスワードが正しくありません。',
+        'auth/invalid-email': 'メールアドレスの形式が正しくありません。',
+        'auth/missing-password': 'パスワードを入力してください。',
+        'auth/user-disabled': 'このアカウントは現在利用できません。',
+        'auth/too-many-requests': '試行回数が多すぎます。少し時間をおいて再試行してください。',
+        'auth/network-request-failed': 'ネットワークエラーです。通信環境を確認してください。',
+        'auth/email-already-in-use': 'このメールアドレスは既に登録されています。',
+        'auth/weak-password': 'パスワードが弱すぎます。6文字以上で設定してください。',
+        'auth/user-not-found': 'このメールアドレスのアカウントは見つかりません。',
+        'auth/wrong-password': 'パスワードが違います。'
+      };
+      return `${actionLabel}エラー: ${map[code] || '処理に失敗しました。入力内容をご確認ください。'}`;
+    }
+
+    function parseStartMinutes(timeRange) {
+      const m = /^\s*(\d{1,2}):(\d{2})/.exec(timeRange || '');
+      if (!m) return null;
+      const hh = Number(m[1]);
+      const mm = Number(m[2]);
+      if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
+      return hh * 60 + mm;
+    }
+
+    function sendScheduleNotification(title, body) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then((reg) => {
+          if (reg && reg.showNotification) {
+            reg.showNotification(title, {
+              body,
+              tag: `schedule-${Date.now()}`
+            });
+            return;
+          }
+          new Notification(title, { body });
+        }).catch(() => {
+          new Notification(title, { body });
+        });
+        return;
+      }
+      new Notification(title, { body });
+    }
+
+    function runScheduleNotificationCheck() {
+      const userId = getCurrentUserId();
+      if (!userId || Notification.permission !== 'granted') return;
+      const now = new Date();
+      const today = getLocalDateString(now);
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      window.state.schedules
+        .filter((s) => s.userId === userId && s.date === today)
+        .forEach((s) => {
+          const startMinutes = parseStartMinutes(s.time);
+          if (startMinutes === null) return;
+
+          const diff = startMinutes - nowMinutes;
+          const notifyPrefix = `keikaku_schedule_notice_${s.id}_${s.date}`;
+
+          if (diff <= 15 && diff > 14) {
+            const key = `${notifyPrefix}_before15`;
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, '1');
+              sendScheduleNotification('予定の15分前です', `${s.date} ${s.time} / ${s.reason || '予定の時間が近づいています。'}`);
+            }
+          }
+
+          if (diff <= 0 && diff > -1) {
+            const key = `${notifyPrefix}_start`;
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, '1');
+              sendScheduleNotification('予定の開始時刻です', `${s.date} ${s.time} / ${s.reason || '予定を開始する時間です。'}`);
+            }
+          }
+        });
+    }
+
+    function startScheduleNotificationWatcher() {
+      if (!('Notification' in window)) return;
+      if (scheduleNotifyTimer) clearInterval(scheduleNotifyTimer);
+      scheduleNotifyTimer = setInterval(runScheduleNotificationCheck, NOTIFY_CHECK_INTERVAL_MS);
+      runScheduleNotificationCheck();
+    }
+
+    window.enableScheduleNotifications = async () => {
+      if (!('Notification' in window)) {
+        alert('このブラウザは通知機能に対応していません。');
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        showToast('🔔 予定通知を有効化しました');
+        runScheduleNotificationCheck();
+      } else {
+        alert('通知が許可されていないため、予定通知を送信できません。');
+      }
     };
 
     // 🔒 個人カレンダー完全分離用の効果的グループID算出関数
@@ -1231,6 +1383,7 @@
         }
 
         document.getElementById('loggedInUserActions').style.display = user.isAnonymous ? 'none' : 'block';
+        await refreshMyGroupsFromServer();
       } else {
         try {
           await signInAnonymously(auth);
@@ -1244,6 +1397,7 @@
       listenToSchedules();
       listenToReviews();
       listenToNotice();
+      startScheduleNotificationWatcher();
     });
 
     // 📦 ゲストデータの移行（データ引き継ぎ）関数
@@ -1337,7 +1491,7 @@
         showToast('🎉 データを引き継ぎ、新規アカウント登録が完了しました！');
         closeAuthModal();
       } catch(err) {
-        alert('登録エラー: ' + err.message);
+        alert(formatAuthErrorMessage(err, '登録'));
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -1384,7 +1538,7 @@
         showToast('🔑 データを引き継ぎログインしました！');
         closeAuthModal();
       } catch(err) {
-        alert('ログインエラー: ' + err.message);
+        alert(formatAuthErrorMessage(err, 'ログイン'));
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -1403,18 +1557,20 @@
     async function checkUrlSharedGroupCode() {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedCode = (urlParams.get('code') || urlParams.get('group') || '').trim().toUpperCase();
+      const sharedKey = normalizeJoinInput(urlParams.get('key') || '');
 
-      if (sharedCode) {
-        await joinGroupByCode(sharedCode, true);
+      if (sharedCode && sharedKey) {
+        await joinGroupByCode(sharedCode, sharedKey, true);
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
 
     window.copyShareableUrl = () => {
       const code = window.state.currentGroup.code;
-      if (!code || code === 'PERSONAL') return;
+      const joinKey = window.state.currentGroup.joinKey;
+      if (!code || code === 'PERSONAL' || !joinKey) return;
 
-      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${code}`;
+      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(code)}&key=${encodeURIComponent(joinKey)}`;
       navigator.clipboard.writeText(shareUrl).then(() => {
         showToast(`🔗 共有URL「${shareUrl}」をコピーしました！`);
       }).catch(() => {
@@ -1430,6 +1586,153 @@
       });
     };
 
+    window.copyGroupJoinKey = () => {
+      const joinKey = window.state.currentGroup.joinKey;
+      if (!joinKey) return;
+      navigator.clipboard.writeText(joinKey).then(() => {
+        showToast(`🔐 参加キー「${joinKey}」をコピーしました！`);
+      });
+    };
+
+    function isCurrentGroupPersonal() {
+      const g = window.state.currentGroup;
+      return !g || g.id === 'PERSONAL' || g.code === 'PERSONAL';
+    }
+
+    function canManageCurrentGroupMembers() {
+      const uid = getCurrentUserId();
+      const group = window.state.currentGroup;
+      if (!uid || !group) return false;
+      return window.state.isAdmin || group.createdBy === uid;
+    }
+
+    async function refreshMyGroupsFromServer() {
+      const uid = getCurrentUserId();
+      if (!uid) {
+        renderMyGroupsList();
+        return;
+      }
+
+      const personal = { id: 'PERSONAL', name: 'マイ個人カレンダー', code: 'PERSONAL' };
+      const map = new Map();
+
+      try {
+        const ownedQ = query(collection(db, 'groups'), where('createdBy', '==', uid));
+        const memberQ = query(collection(db, 'groups'), where('members', 'array-contains', uid));
+        const [ownedSnap, memberSnap] = await Promise.all([getDocs(ownedQ), getDocs(memberQ)]);
+
+        ownedSnap.forEach((d) => map.set(d.id, { id: d.id, ...d.data() }));
+        memberSnap.forEach((d) => map.set(d.id, { id: d.id, ...d.data() }));
+      } catch (e) {
+        console.warn('refreshMyGroupsFromServer fallback:', e);
+      }
+
+      window.state.myGroups = [personal, ...Array.from(map.values())];
+
+      if (!window.state.myGroups.some((g) => g.id === window.state.currentGroup.id)) {
+        switchGroup(personal);
+      } else {
+        renderMyGroupsList();
+        refreshCurrentGroupMembers();
+      }
+    }
+
+    async function refreshCurrentGroupMembers() {
+      const list = document.getElementById('groupMembersList');
+      const leaveBtn = document.getElementById('leaveGroupBtn');
+      if (isCurrentGroupPersonal()) {
+        leaveBtn.style.display = 'none';
+        list.innerHTML = '<span style="color:var(--text-muted); font-size:12px;">個人カレンダーにはメンバー一覧はありません。</span>';
+        return;
+      }
+
+      const uid = getCurrentUserId();
+      leaveBtn.style.display = uid ? 'inline-block' : 'none';
+
+      try {
+        const groupDocRef = doc(db, 'groups', window.state.currentGroup.id);
+        const snap = await getDoc(groupDocRef);
+        if (!snap.exists()) {
+          list.innerHTML = '<span style="color:var(--danger); font-size:12px;">グループ情報が見つかりません。</span>';
+          return;
+        }
+
+        const g = { id: snap.id, ...snap.data() };
+        window.state.currentGroup = { ...window.state.currentGroup, ...g };
+        const members = Array.isArray(g.members) ? g.members : [];
+        window.state.currentGroupMembers = members;
+
+        list.innerHTML = members.map((memberUid) => {
+          const isOwner = memberUid === g.createdBy;
+          const isMe = memberUid === uid;
+          const canBan = canManageCurrentGroupMembers() && !isOwner && !isMe;
+          const shortUid = memberUid.slice(0, 8);
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); gap:8px;">
+              <div style="display:flex; flex-direction:column;">
+                <strong>ユーザー ${shortUid}</strong>
+                <span style="font-size:11px; color:var(--text-muted);">${isOwner ? '作成者' : isMe ? 'あなた' : 'メンバー'}</span>
+              </div>
+              ${canBan ? `<button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="kickBanMember('${memberUid}')">キック(BAN)</button>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        if (members.length === 0) {
+          list.innerHTML = '<span style="color:var(--text-muted); font-size:12px;">メンバーがいません。</span>';
+        }
+      } catch (e) {
+        console.warn('refreshCurrentGroupMembers fallback:', e);
+        list.innerHTML = '<span style="color:var(--danger); font-size:12px;">メンバー情報の取得に失敗しました。</span>';
+      }
+    }
+
+    window.leaveCurrentGroup = async () => {
+      if (isCurrentGroupPersonal()) return;
+      const uid = getCurrentUserId();
+      if (!uid) return;
+      const group = window.state.currentGroup;
+
+      if (group.createdBy === uid) {
+        alert('作成者は退会できません。別のメンバーに作成者権限を移してから退会してください。');
+        return;
+      }
+
+      if (!confirm('このグループから退会しますか？')) return;
+
+      try {
+        await updateDoc(doc(db, 'groups', group.id), {
+          members: arrayRemove(uid),
+          updatedAt: new Date()
+        });
+        showToast('👋 グループから退会しました');
+        await refreshMyGroupsFromServer();
+      } catch (e) {
+        alert('退会に失敗しました。時間をおいて再試行してください。');
+      }
+    };
+
+    window.kickBanMember = async (memberUid) => {
+      if (!canManageCurrentGroupMembers()) {
+        alert('この操作を実行する権限がありません。');
+        return;
+      }
+      if (!memberUid) return;
+      if (!confirm(`ユーザー ${memberUid.slice(0, 8)} をキック(BAN)しますか？`)) return;
+
+      try {
+        await updateDoc(doc(db, 'groups', window.state.currentGroup.id), {
+          members: arrayRemove(memberUid),
+          bannedUids: arrayUnion(memberUid),
+          updatedAt: new Date()
+        });
+        showToast('⛔ メンバーをキック(BAN)しました');
+        await refreshCurrentGroupMembers();
+      } catch (e) {
+        alert('キック(BAN)に失敗しました。');
+      }
+    };
+
     // --- 👥 GROUP MANAGEMENT ---
     window.openGroupModal = () => document.getElementById('groupModal').classList.add('open');
     window.closeGroupModal = () => document.getElementById('groupModal').classList.remove('open');
@@ -1437,17 +1740,31 @@
     window.createNewGroup = async () => {
       const groupName = document.getElementById('newGroupNameInput').value.trim();
       if (!groupName) return alert('グループ名を入力してください');
+      const currentUid = getCurrentUserId();
+      if (!currentUid) return alert('ログイン情報の取得に失敗しました。再読み込みしてください。');
 
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const joinKey = Math.random().toString(36).substring(2, 10).toUpperCase();
       const newGroup = {
         name: groupName,
         code: code,
-        createdBy: window.state.currentUser ? window.state.currentUser.uid : 'anon',
+        createdBy: currentUid,
+        members: [currentUid],
+        bannedUids: [],
+        joinKey: joinKey,
         createdAt: new Date()
       };
 
       try {
         const docRef = await addDoc(collection(db, "groups"), newGroup);
+        const inviteId = buildInviteId(code, joinKey);
+        await setDoc(doc(db, 'groupInvites', inviteId), {
+          groupId: docRef.id,
+          code,
+          createdBy: currentUid,
+          createdAt: new Date(),
+          isActive: true
+        });
         const groupObj = { id: docRef.id, ...newGroup };
         window.state.myGroups.push(groupObj);
         switchGroup(groupObj);
@@ -1455,7 +1772,7 @@
         showToast(`🎉 グループ「${groupName}」を作成しました！`);
         closeGroupModal();
       } catch(e) {
-        const groupObj = { id: 'G_' + Date.now(), name: groupName, code: code };
+        const groupObj = { id: 'G_' + Date.now(), name: groupName, code: code, joinKey: joinKey, createdBy: currentUid, members: [currentUid], bannedUids: [] };
         window.state.myGroups.push(groupObj);
         switchGroup(groupObj);
         closeGroupModal();
@@ -1464,28 +1781,57 @@
 
     window.joinGroup = async () => {
       const code = document.getElementById('joinGroupCodeInput').value.trim().toUpperCase();
+      const joinKey = normalizeJoinInput(document.getElementById('joinGroupKeyInput').value);
       if (!code) return alert('グループコードを入力してください');
-      await joinGroupByCode(code, false);
+      if (!joinKey) return alert('参加キーを入力してください');
+      await joinGroupByCode(code, joinKey, false);
     };
 
-    async function joinGroupByCode(code, isFromUrl = false) {
+    async function joinGroupByCode(code, joinKey, isFromUrl = false) {
+      const uid = getCurrentUserId();
+      if (!uid) {
+        if (!isFromUrl) alert('ログイン情報が取得できません。再読み込みしてください。');
+        return;
+      }
+
       try {
-        const q = query(collection(db, "groups"), where("code", "==", code));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const gDoc = snap.docs[0];
-          const groupObj = { id: gDoc.id, ...gDoc.data() };
-          if (!window.state.myGroups.some(g => g.id === groupObj.id)) {
-            window.state.myGroups.push(groupObj);
-          }
-          switchGroup(groupObj);
-          showToast(isFromUrl ? `🔗 共有リンクから「${groupObj.name}」に参加しました！` : `👥 グループ「${groupObj.name}」に参加しました！`);
-          closeGroupModal();
-        } else {
+        const inviteId = buildInviteId(code, joinKey);
+        const inviteSnap = await getDoc(doc(db, 'groupInvites', inviteId));
+        if (!inviteSnap.exists() || !inviteSnap.data().groupId) {
           if (!isFromUrl) alert('指定されたグループコードが見つかりません');
+          return;
         }
+
+        const groupRef = doc(db, 'groups', inviteSnap.data().groupId);
+        const gDoc = await getDoc(groupRef);
+        if (!gDoc.exists()) {
+          if (!isFromUrl) alert('グループが存在しません');
+          return;
+        }
+
+        const groupObj = { id: gDoc.id, ...gDoc.data() };
+        const bannedUids = Array.isArray(groupObj.bannedUids) ? groupObj.bannedUids : [];
+        if (bannedUids.includes(uid)) {
+          alert('このグループからBANされています。参加できません。');
+          return;
+        }
+
+        const currentMembers = Array.isArray(groupObj.members) ? groupObj.members : [];
+        if (!currentMembers.includes(uid)) {
+          await updateDoc(groupRef, {
+            members: arrayUnion(uid),
+            updatedAt: new Date()
+          });
+        }
+
+        await refreshMyGroupsFromServer();
+        const latestGroup = window.state.myGroups.find((g) => g.id === groupObj.id) || groupObj;
+        switchGroup(latestGroup);
+        showToast(isFromUrl ? `🔗 共有リンクから「${groupObj.name}」に参加しました！` : `👥 グループ「${groupObj.name}」に参加しました！`);
+        closeGroupModal();
       } catch(e) {
         console.warn("Group join fallback:", e);
+        if (!isFromUrl) alert('グループ参加に失敗しました。コードと参加キーを確認してください。');
       }
     }
 
@@ -1496,19 +1842,24 @@
       const codeWrapper = document.getElementById('groupCodeWrapper');
       const btnCopy = document.getElementById('btnCopyCode');
       const btnShare = document.getElementById('btnShareLink');
+      const btnCopyJoinKey = document.getElementById('btnCopyJoinKey');
 
       if (groupObj.id === 'PERSONAL' || groupObj.code === 'PERSONAL') {
         codeWrapper.style.display = 'none';
         btnCopy.style.display = 'none';
         btnShare.style.display = 'none';
+        btnCopyJoinKey.style.display = 'none';
       } else {
         document.getElementById('currentGroupCode').innerText = groupObj.code;
+        document.getElementById('currentGroupJoinKey').innerText = groupObj.joinKey || '--------';
         codeWrapper.style.display = 'block';
         btnCopy.style.display = 'inline-flex';
         btnShare.style.display = 'inline-flex';
+        btnCopyJoinKey.style.display = groupObj.joinKey ? 'inline-flex' : 'none';
       }
 
       renderMyGroupsList();
+      refreshCurrentGroupMembers();
       listenToSchedules();
     }
 
@@ -1516,11 +1867,12 @@
       const container = document.getElementById('myGroupsList');
       container.innerHTML = window.state.myGroups.map(g => {
         const codeText = g.code === 'PERSONAL' ? '' : `[${g.code}]`;
+        const groupMeta = g.code === 'PERSONAL' ? '' : ` / キー:${g.joinKey || '----'}`;
         return `
           <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color);">
             <div>
               <strong>${g.name}</strong>
-              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">${codeText}</span>
+              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">${codeText}${groupMeta}</span>
             </div>
             <button class="pill-btn ${window.state.currentGroup.id === g.id ? 'active' : ''}" onclick="switchGroupById('${g.id}')">
               ${window.state.currentGroup.id === g.id ? '選択中' : '切り替え'}
@@ -1602,7 +1954,7 @@
         grid.innerHTML += `<div class="day-cell empty"></div>`;
       }
 
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalDateString();
 
       for (let date = 1; date <= lastDate; date++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
