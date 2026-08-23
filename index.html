@@ -1152,7 +1152,7 @@
       reviews: [],
       activeRating: 5,
       activeFormStatus: 'ok',
-      adminEmails: [],
+      adminEmails: ["admin@keikaku.app", "admin@example.com", "photo_5vdwwzg@gmail.com"],
       rouletteOptions: [
         { id: 1, name: "カラオケ", weight: 25, color: "#dd2e44" },
         { id: 2, name: "ボウリング", weight: 25, color: "#55acee" },
@@ -1179,6 +1179,42 @@
 
     function getCurrentUserId() {
       return window.state.currentUser ? window.state.currentUser.uid : null;
+    }
+
+    // Firestoreから他メンバーの表示名を取得する。
+    // users/{uid}.name を優先し、無ければ Firebase Auth の displayName / email / UID を使用。
+    async function getMemberDisplayName(memberUid) {
+      if (!memberUid) return '不明なユーザー';
+
+      const currentUser = window.state.currentUser;
+      if (currentUser && currentUser.uid === memberUid) {
+        return currentUser.displayName
+          || `ユーザー(${memberUid.slice(0, 8)})`;
+      }
+
+      try {
+        const userSnap = await getDoc(doc(db, 'users', memberUid));
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          return data.name
+            || data.displayName
+            || `ユーザー(${memberUid.slice(0, 8)})`;
+        }
+      } catch (e) {
+        console.warn(`ユーザー情報取得失敗 (${memberUid}):`, e);
+      }
+
+      return `ユーザー(${memberUid.slice(0, 8)})`;
+    }
+
+    // innerHTML に表示するユーザー名等をエスケープ
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
     function normalizeJoinInput(value) {
@@ -1662,21 +1698,28 @@
         const members = Array.isArray(g.members) ? g.members : [];
         window.state.currentGroupMembers = members;
 
-        list.innerHTML = members.map((memberUid) => {
+        // UIDだけでなく、users/{uid} の表示名を取得して表示する。
+        const memberRows = await Promise.all(members.map(async (memberUid) => {
           const isOwner = memberUid === g.createdBy;
           const isMe = memberUid === uid;
           const canBan = canManageCurrentGroupMembers() && !isOwner && !isMe;
+          const displayName = await getMemberDisplayName(memberUid);
           const shortUid = memberUid.slice(0, 8);
+
           return `
             <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); gap:8px;">
-              <div style="display:flex; flex-direction:column;">
-                <strong>ユーザー ${shortUid}</strong>
-                <span style="font-size:11px; color:var(--text-muted);">${isOwner ? '作成者' : isMe ? 'あなた' : 'メンバー'}</span>
+              <div style="display:flex; flex-direction:column; min-width:0;">
+                <strong style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(displayName)}</strong>
+                <span style="font-size:11px; color:var(--text-muted);">
+                  ${isOwner ? '作成者' : isMe ? 'あなた' : 'メンバー'} · UID: ${escapeHtml(shortUid)}
+                </span>
               </div>
-              ${canBan ? `<button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="kickBanMember('${memberUid}')">キック(BAN)</button>` : ''}
+              ${canBan ? `<button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="kickBanMember('${escapeHtml(memberUid)}')">キック(BAN)</button>` : ''}
             </div>
           `;
-        }).join('');
+        }));
+
+        list.innerHTML = memberRows.join('');
 
         if (members.length === 0) {
           list.innerHTML = '<span style="color:var(--text-muted); font-size:12px;">メンバーがいません。</span>';

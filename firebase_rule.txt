@@ -60,10 +60,11 @@ service cloud.firestore {
 
     match /users/{userId} {
 
-      // ログイン中なら自分のプロフィールだけ読める
-      // 管理者は全員閲覧可能
-      allow read: if signedIn()
-                  && (request.auth.uid == userId || isAdmin());
+      // グループメンバーの表示名を取得するため、
+      // ログイン済みユーザーは他ユーザーのプロフィールも取得可能。
+      // ※ users ドキュメントにはメールアドレス等も含まれるため、
+      // 将来的には publicProfiles/{userId} へ表示名を分離するのがより安全。
+      allow read: if signedIn();
 
       // 自分のアカウント作成のみ
       // role を勝手に admin に変更できないようにする
@@ -90,10 +91,15 @@ service cloud.firestore {
 
     match /groups/{groupId} {
 
-      // メンバー/作成者/管理者のみ閲覧可能
-      // BANされているユーザーは閲覧不可
+      // BAN判定をここに入れると、
+      // members/createdBy を条件にしたFirestore queryが
+      // 「そのqueryが常に許可される」と判定できず
+      // Missing or insufficient permissions になる場合があるため、
+      // groupドキュメントのreadは membership/creator/admin で判定する。
+      //
+      // BAN済みユーザーは members から除外されるため、
+      // 通常はこのread条件にも一致しない。
       allow read: if signedIn()
-                  && !isGroupBanned(groupId)
                   && (
                     isAdmin()
                     || resource.data.createdBy == request.auth.uid
@@ -110,14 +116,17 @@ service cloud.firestore {
                     && request.resource.data.code is string;
 
       // 管理者・作成者: 全更新可
-      // 一般メンバー: 自分の参加/退会のみ可（他項目改ざん禁止）
       allow update: if isAdmin()
                     || (
                       signedIn()
                       && resource.data.createdBy == request.auth.uid
                     )
+                    // 一般メンバーの参加:
+                    // 既存データを変更せず、自分自身だけを1人追加できる。
+                    // ただしBAN済みユーザーはルール上も再参加不可。
                     || (
                       signedIn()
+                      && !(request.auth.uid in resource.data.bannedUids)
                       && request.resource.data.createdBy == resource.data.createdBy
                       && request.resource.data.code == resource.data.code
                       && request.resource.data.name == resource.data.name
@@ -129,6 +138,8 @@ service cloud.firestore {
                       && request.auth.uid in request.resource.data.members
                       && !(request.auth.uid in resource.data.members)
                     )
+                    // 一般メンバーの退会:
+                    // 自分自身だけを1人削除できる。
                     || (
                       signedIn()
                       && request.resource.data.createdBy == resource.data.createdBy
