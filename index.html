@@ -1833,7 +1833,7 @@
     async function joinGroupByCode(code, joinKey, isFromUrl = false) {
       const uid = getCurrentUserId();
       if (!uid) {
-        if (!isFromUrl) alert('ログイン情報が取得できません。再読み込みしてください。');
+        alert('ログイン中のみグループに参加できます。');
         return;
       }
 
@@ -1841,14 +1841,14 @@
         const inviteId = buildInviteId(code, joinKey);
         const inviteSnap = await getDoc(doc(db, 'groupInvites', inviteId));
         if (!inviteSnap.exists() || !inviteSnap.data().groupId) {
-          if (!isFromUrl) alert('指定されたグループコードが見つかりません');
+          alert('指定されたグループコードが見つかりません');
           return;
         }
 
         const groupRef = doc(db, 'groups', inviteSnap.data().groupId);
         const gDoc = await getDoc(groupRef);
         if (!gDoc.exists()) {
-          if (!isFromUrl) alert('グループが存在しません');
+          alert('グループが存在しません');
           return;
         }
 
